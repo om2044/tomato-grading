@@ -1,0 +1,19 @@
+name: CI
+
+# Déclenche le workflow à chaque push sur la branche main
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Un test simple
+        run: echo "Le workflow fonctionne !"
