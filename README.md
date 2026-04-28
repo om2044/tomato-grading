@@ -1,6 +1,6 @@
 # 🍅 TomatoGrade — Classification industrielle de tomates par CNN
 
-[![CI](https://github.com/TON_USERNAME/tomato-grading/actions/workflows/ci.yml/badge.svg)](https://github.com/TON_USERNAME/tomato-grading/actions)
+[![CI](https://github.com/om2044/tomato-grading/actions/workflows/ci.yml/badge.svg)](https://github.com/om2044/tomato-grading/actions)
 
 Solution SaaS B2B de tri automatique de tomates récoltées par deep learning.
 Classifie chaque tomate en **Classe A** (export), **Classe B** (marché local) ou **Classe C** (rejet).
