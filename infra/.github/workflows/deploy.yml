@@ -1,0 +1,15 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to VPS
+        run: |
+          echo "Configurer SSH_KEY et SERVER_HOST dans GitHub Secrets"
+          echo "puis : ssh user@server 'cd tomato-grading && git pull && docker-compose -f infra/docker-compose.prod.yml up -d --build'"

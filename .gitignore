@@ -1,0 +1,35 @@
+# Données (trop lourdes pour GitHub — utilise DVC ou Kaggle)
+ai/data/
+
+# Modèles entraînés
+ai/models/saved/
+
+# Environnements Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+
+# Node
+node_modules/
+frontend/dist/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Reports générés
+ai/reports/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Secrets
+*.pem
+*.key

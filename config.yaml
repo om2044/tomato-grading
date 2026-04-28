@@ -1,0 +1,27 @@
+# Hyperparamètres centralisés — modifie ici, pas dans le code
+
+model:
+  input_size: 224
+  num_classes: 3
+  classes: ["ClasseA", "ClasseB", "ClasseC"]
+  batch_size: 32
+  epochs: 50
+  learning_rate: 0.001
+  dropout_rate: 0.5
+
+data:
+  train_ratio: 0.70
+  val_ratio: 0.15
+  test_ratio: 0.15
+  min_image_size: 64
+  random_seed: 42
+
+augmentation:
+  rotation_range: 20
+  zoom_range: 0.1
+  horizontal_flip: true
+  brightness_range: [0.8, 1.2]
+
+thresholds:
+  confidence_min: 0.75      # en dessous → "incertain", inspection manuelle
+  rejection_alert: 0.30     # alerte si > 30% de rejets dans la session
