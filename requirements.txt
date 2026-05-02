@@ -5,3 +5,5 @@ uvicorn
 kaggle
 python-dotenv
 Pillow
+matplotlib
+seaborn
