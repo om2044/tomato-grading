@@ -2,8 +2,8 @@
 FROM python:3.11-slim
 
 # Éviter que Python ne génère des fichiers .pyc et forcer l'affichage des logs
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
 # Installer les dépendances système nécessaires pour PostgreSQL (psycopg2)
 RUN apt-get update && apt-get install -y \

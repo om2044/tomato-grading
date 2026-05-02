@@ -33,3 +33,12 @@ Thumbs.db
 # Secrets
 *.pem
 *.key
+data/
+*.jpg
+*.jpeg
+*.png
+
+# Ignorer les modèles entraînés (qui pèsent lourd aussi)
+ai/models/saved/*.h5
+ai/models/saved/*.pth
+ai/models/saved/*.pt
