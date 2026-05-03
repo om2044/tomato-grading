@@ -21,7 +21,7 @@ Bronze (raw) → Argent (clean) → Or (ML-ready) → CNN → API → Frontend
 ## Démarrage rapide
 ```bash
 # 1. Cloner
-git clone https://github.com/TON_USERNAME/tomato-grading.git
+git clone https://github.com/om2044/tomato-grading.git
 cd tomato-grading
 
 # 2. Configurer les variables d'environnement
