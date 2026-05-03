@@ -53,7 +53,13 @@ Accès :
 - API docs : http://localhost:8000/docs
 
 ## Dataset
-Tomato Maturity Detection & Quality Grading — Mendeley Data (DOI: 10.17632/s42kpg8h37.1)
-2 986 images originales · 10 000 images augmentées · Licence CC BY 4.0
+
+**Kaggle Dataset :** [Tomato Quality Classification (Augmented)](https://www.kaggle.com/datasets/mohamedafkir90/tomato-quality-classification)
+
+Notre modèle a été entraîné sur une version augmentée et préparée pour le machine learning, accessible publiquement via le lien ci-dessus. 
+
+* **Source originale :** Tomato Maturity Detection & Quality Grading — Mendeley Data (DOI: 10.17632/s42kpg8h37.1)
+* **Volume :** 2 986 images originales · 10 000+ images augmentées
+* **Licence :** CC BY 4.0
 
 
