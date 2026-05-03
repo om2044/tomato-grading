@@ -19,20 +19,34 @@ Bronze (raw) → Argent (clean) → Or (ML-ready) → CNN → API → Frontend
 ```
 
 ## Démarrage rapide
+
 ```bash
-# 1. Cloner
-git clone https://github.com/om2044/tomato-grading.git
+# 1. Cloner le projet
+git clone [https://github.com/om2044/tomato-grading.git](https://github.com/om2044/tomato-grading.git)
 cd tomato-grading
 
-# 2. Configurer les variables d'environnement
+# 2. Créer et activer l'environnement virtuel
+python -m venv .venv
+# Sur Windows :
+.\.venv\Scripts\activate
+# Sur Mac/Linux :
+# source .venv/bin/activate
+
+# 3. Installer les dépendances
+pip install -r requirements.txt
+
+# 4. Configurer les variables d'environnement
+# (Assurez-vous que Make est installé sur votre machine)
+# pour windows
+winget install GnuWin32.Make
+
 make env
 
-# 3. Entraîner le modèle
+# 5. Entraîner le modèle
 make train
 
-# 4. Lancer toute l'application
+# 6. Lancer toute l'application
 make dev
-```
 
 Accès :
 - Frontend : http://localhost:3000
@@ -41,3 +55,5 @@ Accès :
 ## Dataset
 Tomato Maturity Detection & Quality Grading — Mendeley Data (DOI: 10.17632/s42kpg8h37.1)
 2 986 images originales · 10 000 images augmentées · Licence CC BY 4.0
+
+
