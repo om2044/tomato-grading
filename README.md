@@ -22,7 +22,7 @@ Bronze (raw) → Argent (clean) → Or (ML-ready) → CNN → API → Frontend
 
 ```bash
 # 1. Cloner le projet
-git clone [https://github.com/om2044/tomato-grading.git](https://github.com/om2044/tomato-grading.git)
+git clone https://github.com/om2044/tomato-grading.git
 cd tomato-grading
 
 # 2. Créer et activer l'environnement virtuel

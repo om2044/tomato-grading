@@ -48,3 +48,4 @@ def rename_tomato_images(folder_path, Type):
 DIRECTORY_PATH = r"C:\Users\hp\Desktop\Tomato_dataset\Local" 
 
 rename_tomato_images(DIRECTORY_PATH,"Local")
+
