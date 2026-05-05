@@ -25,17 +25,21 @@ Bronze (raw) → Argent (clean) → Or (ML-ready) → CNN → API → Frontend
 git clone https://github.com/om2044/tomato-grading.git
 cd tomato-grading
 
-# 2. Créer et activer l'environnement virtuel
-python -m venv .venv
-# Sur Windows :
-.\.venv\Scripts\activate
-# Sur Mac/Linux :
-# source .venv/bin/activate
+# 2. Créer et activer l'environnement virtuel pour backend
+cd backend
+python -m venv venv
 
-# 3. Installer les dépendances
+# Activation (Windows) :
+venv\Scripts\activate
+# Activation (Mac/Linux) :
+# source venv/bin/activate
+
+# Installation des paquets
 pip install -r requirements.txt
 
-# 4. Configurer les variables d'environnement
+uvicorn app.main:app --reload
+
+# 5. Configurer les variables d'environnement
 # (Assurez-vous que Make est installé sur votre machine)
 # pour windows
 winget install GnuWin32.Make
