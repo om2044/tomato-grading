@@ -7,12 +7,13 @@ import io
 from pathlib import Path
 from app.core.database import get_db
 from app.core.model import PredictionRecord
+from rembg import remove
 
 router = APIRouter()
 
 ROOT_DIR = Path(__file__).resolve().parents[4]
 
-MODEL_PATH = ROOT_DIR / "ai" / "models" / "Tomato_grading_01.keras"
+MODEL_PATH = ROOT_DIR / "ai" / "models" / "Tomato_grading_02.keras"
 
 
 try:
@@ -35,6 +36,11 @@ async def predict_tomato(file: UploadFile = File(...),db: Session = Depends(get_
     try:
         contents = await file.read()
         
+        # --- NEW: MAGICAL BACKGROUND REMOVAL ---
+        # This strips out the table, dirt, hands, etc.
+        no_bg_bytes = remove(contents)
+        
+        
         file_size = len(contents)
         print(f"Received file: {file.filename} | Size: {file_size} bytes")
         
@@ -43,7 +49,7 @@ async def predict_tomato(file: UploadFile = File(...),db: Session = Depends(get_
        
 
         try:
-            image = Image.open(io.BytesIO(contents)).convert('RGB')
+            image = Image.open(io.BytesIO(no_bg_bytes)).convert('RGB')
         except Exception as img_error:
             
             print(f"Pillow failed to open image: {img_error}")
@@ -53,7 +59,7 @@ async def predict_tomato(file: UploadFile = File(...),db: Session = Depends(get_
         image = image.resize((224, 224))
         img_array = np.array(image)
         img_array = np.expand_dims(img_array, axis=0)
-        
+        img_array = img_array / 255.0
         
         predictions = model.predict(img_array)
         predicted_class_index = np.argmax(predictions[0])
