@@ -13,7 +13,7 @@ router = APIRouter()
 
 ROOT_DIR = Path(__file__).resolve().parents[4]
 
-MODEL_PATH = ROOT_DIR / "ai" / "models" / "Tomato_grading_02.keras"
+MODEL_PATH = ROOT_DIR / "ai" / "models" / "Tomato_grading_05.keras"
 
 
 try:
@@ -36,8 +36,7 @@ async def predict_tomato(file: UploadFile = File(...),db: Session = Depends(get_
     try:
         contents = await file.read()
         
-        # --- NEW: MAGICAL BACKGROUND REMOVAL ---
-        # This strips out the table, dirt, hands, etc.
+       
         no_bg_bytes = remove(contents)
         
         

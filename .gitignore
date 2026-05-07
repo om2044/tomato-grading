@@ -3,6 +3,12 @@ ai/data/
 
 # Modèles entraînés
 ai/models/saved/
+*.keras
+*.h5
+*.pb
+*.tflite
+*.pt
+*.pth
 
 # Environnements Python
 __pycache__/

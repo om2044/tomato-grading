@@ -1,35 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, RefreshCw, Upload, Loader2, Zap } from 'lucide-react';
-
-// Les fausses détections (Bounding Boxes)
-const BBOXES = [
-  {
-    label: "Export",  confidence: "98%",
-    color: "#22c55e", border: "border-green-500",  text: "text-green-700 dark:text-green-400",
-    bg: "bg-green-500/20 dark:bg-green-500/10",
-    style: { top: "14%", left: "8%",  width: "28%", height: "38%" },
-  },
-  {
-    label: "Local",   confidence: "85%",
-    color: "#f97316", border: "border-orange-500", text: "text-orange-700 dark:text-orange-400",
-    bg: "bg-orange-500/20 dark:bg-orange-500/10",
-    style: { top: "22%", left: "38%", width: "26%", height: "35%" },
-  },
-  {
-    label: "Défaut",  confidence: "99%",
-    color: "#ef4444", border: "border-red-500",    text: "text-red-700 dark:text-red-400",
-    bg: "bg-red-500/20 dark:bg-red-500/10",
-    style: { top: "30%", left: "66%", width: "24%", height: "33%" },
-  },
-];
+import { Camera, RefreshCw, Upload, Loader2, Zap, CheckCircle, AlertTriangle } from 'lucide-react';
+import { useClassifier } from '../hooks/useClassifier'; // We are importing your real AI hook!
 
 export default function ClassifierWidget() {
   const [imagePreview, setImagePreview] = useState(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisComplete, setAnalysisComplete] = useState(false);
+  const [imageFile, setImageFile] = useState(null); // Keep the actual file to send to API
   const [scanLine, setScanLine] = useState(0);
 
-  // Animation du faux "laser" de scan
+  // Hook up your real AI connection!
+  const { classifyImage, isClassifying, result, error } = useClassifier();
+
+  // Faux "laser" animation
   useEffect(() => {
     const t = setInterval(() => setScanLine(s => (s + 1) % 100), 30);
     return () => clearInterval(t);
@@ -38,24 +19,22 @@ export default function ClassifierWidget() {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setImageFile(file);
       const url = URL.createObjectURL(file);
       setImagePreview(url);
-      setAnalysisComplete(false);
     }
   };
 
   const handleAnalyze = () => {
-    setIsAnalyzing(true);
-    setTimeout(() => {
-      setIsAnalyzing(false);
-      setAnalysisComplete(true);
-    }, 2000);
+    if (imageFile) {
+      // Send the real image to your Python backend!
+      classifyImage(imageFile);
+    }
   };
 
   const handleReset = () => {
     setImagePreview(null);
-    setAnalysisComplete(false);
-    setIsAnalyzing(false);
+    setImageFile(null);
   };
 
   return (
@@ -88,12 +67,12 @@ export default function ClassifierWidget() {
           <rect width="100%" height="100%" fill="url(#grid)" />
         </svg>
 
-        {/* Laser Vert (Visible si en analyse ou si terminé) */}
-        {(isAnalyzing || analysisComplete) && (
+        {/* Laser Vert (Visible si en analyse) */}
+        {isClassifying && (
           <div className="absolute left-0 right-0 h-px bg-green-400/60 dark:bg-green-400/40 pointer-events-none z-30" style={{ top: `${scanLine}%`, boxShadow: "0 0 12px rgba(74,222,128,0.6)", transition: "top 0.03s linear" }} />
         )}
 
-        {/* Gestion de l'affichage Image vs Upload */}
+        {/* Upload Zone */}
         {!imagePreview ? (
           <label className="z-10 flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-white/5 dark:hover:bg-gray-900/30 transition-colors border-2 border-dashed border-gray-600 dark:border-gray-800 m-4 rounded-xl">
             <Upload size={48} className="text-gray-400 dark:text-gray-600 mb-4" />
@@ -101,50 +80,75 @@ export default function ClassifierWidget() {
             <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
           </label>
         ) : (
-          <div className="relative w-full h-full flex items-center justify-center p-4 z-10">
-            <img src={imagePreview} className="max-w-full max-h-full object-contain relative z-10 rounded border border-gray-700 dark:border-gray-800" alt="Preview" />
+          <div className="relative w-full h-full flex flex-col items-center justify-center p-4 z-10">
             
-            {isAnalyzing && (
-              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm">
-                <Loader2 size={40} className="text-green-500 animate-spin mb-4" />
-                <p className="text-green-400 font-bold uppercase tracking-widest animate-pulse">Analyse en cours...</p>
-              </div>
-            )}
-
-            {!isAnalyzing && !analysisComplete && (
-              <div className="absolute z-20">
-                <button onClick={handleAnalyze} className="bg-blue-600 hover:bg-blue-500 text-white font-bold uppercase tracking-widest px-8 py-4 rounded-lg shadow-[0_0_20px_rgba(37,99,235,0.4)] flex items-center gap-3 transition-all cursor-pointer">
-                  <Zap size={18} /> Lancer l'analyse
-                </button>
-              </div>
-            )}
-
-            {/* Bounding Boxes après analyse */}
-            {analysisComplete && BBOXES.map((box, i) => (
-              <div key={i} className={`absolute border-2 ${box.border} bg-black/40 rounded-sm z-20`} style={{ ...box.style, transition: "opacity 0.3s" }}>
-                <div className={`absolute -top-6 left-0 flex items-center gap-1 px-2 py-0.5 rounded-sm text-xs font-bold text-white`} style={{ background: "rgba(0,0,0,0.85)", border: `1px solid ${box.color}`, whiteSpace: "nowrap" }}>
-                  <span>{box.label}</span><span className="opacity-70">·</span><span>{box.confidence}</span>
+            {/* The Image */}
+            <div className="relative flex-1 flex items-center justify-center max-h-[70%] w-full">
+              <img src={imagePreview} className="max-w-full max-h-full object-contain rounded border border-gray-700 dark:border-gray-800" alt="Preview" />
+              
+              {/* API Loading Overlay */}
+              {isClassifying && (
+                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm rounded">
+                  <Loader2 size={40} className="text-green-500 animate-spin mb-4" />
+                  <p className="text-green-400 font-bold uppercase tracking-widest animate-pulse">Traitement IA en cours...</p>
                 </div>
-                <span className={`absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 ${box.border}`} /><span className={`absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 ${box.border}`} /><span className={`absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 ${box.border}`} /><span className={`absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 ${box.border}`} />
+              )}
+            </div>
+
+            {/* Error Message from Backend */}
+            {error && !isClassifying && (
+               <div className="mt-4 px-6 py-3 bg-red-500/20 border border-red-500 rounded-lg backdrop-blur text-red-400 font-bold flex items-center gap-2">
+                 <AlertTriangle size={18} /> {error}
+               </div>
+            )}
+
+            {/* The Button */}
+            {!isClassifying && !result && !error && (
+              <button onClick={handleAnalyze} className="mt-6 bg-blue-600 hover:bg-blue-500 text-white font-bold uppercase tracking-widest px-8 py-4 rounded-lg shadow-[0_0_20px_rgba(37,99,235,0.4)] flex items-center gap-3 transition-all cursor-pointer">
+                <Zap size={18} /> Lancer l'analyse
+              </button>
+            )}
+
+            {/* The Real Result from Database! */}
+            {result && !isClassifying && (
+              <div className="mt-6 w-full max-w-sm">
+                <div className={`p-4 rounded-lg border-2 backdrop-blur-md flex items-center justify-between ${
+                  result.decision === 'Rotten' || result.decision === 'Rejet' 
+                    ? 'bg-red-900/30 border-red-500 text-red-400' 
+                    : 'bg-green-900/30 border-green-500 text-green-400'
+                }`}>
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Décision IA</span>
+                    <div className="flex items-center gap-2 mt-1">
+                      {result.decision === 'Rotten' || result.decision === 'Rejet' ? <AlertTriangle size={20} /> : <CheckCircle size={20} />}
+                      <span className="text-xl font-black">{result.decision === 'Rotten' ? 'Rejet' : result.decision}</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col text-right">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Confiance</span>
+                    <span className="text-xl font-mono font-bold">{(result.confidence * 100).toFixed(1)}%</span>
+                  </div>
+                </div>
               </div>
-            ))}
+            )}
+
           </div>
         )}
 
         {/* Petit overlay KPIs Vidéo */}
         <div className="absolute bottom-0 left-0 right-0 p-3 flex items-end justify-between z-30 pointer-events-none">
           <div className="flex gap-2 flex-wrap">
-            <span className="text-xs bg-black/70 text-green-400 px-2 py-1 rounded border border-green-500/20">Objets détectés : <strong>{analysisComplete ? "3" : "0"}</strong></span>
-            <span className="text-xs bg-black/70 text-gray-300 px-2 py-1 rounded border border-gray-700">Latence IA : <strong>{analysisComplete ? "18 ms" : "--"}</strong></span>
+            <span className="text-xs bg-black/70 text-blue-400 px-2 py-1 rounded border border-blue-500/20">Modèle: <strong>CNN v1.0</strong></span>
+            {result && <span className="text-xs bg-black/70 text-green-400 px-2 py-1 rounded border border-green-500/20">Statut: <strong>Scan Terminé</strong></span>}
           </div>
         </div>
       </div>
 
-      {/* Barre de Status Système (CPU/GPU) */}
+      {/* Barre de Status Système */}
       <div className="px-5 py-2.5 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950/60 flex items-center gap-6">
         {[
-          { label: "CPU", value: isAnalyzing ? "89%" : "34%",  color: isAnalyzing ? "bg-red-500" : "bg-blue-500" },
-          { label: "GPU", value: isAnalyzing ? "95%" : "67%",  color: "bg-purple-500" },
+          { label: "CPU", value: isClassifying ? "89%" : "34%",  color: isClassifying ? "bg-red-500" : "bg-blue-500" },
+          { label: "GPU", value: isClassifying ? "95%" : "67%",  color: "bg-purple-500" },
           { label: "Temp", value: "52°C", color: "bg-orange-500" },
         ].map(item => (
           <div key={item.label} className="flex items-center gap-2">

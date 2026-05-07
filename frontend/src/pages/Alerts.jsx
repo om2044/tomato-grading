@@ -1,19 +1,52 @@
-import React, { useState } from 'react';
-import { Link } from "react-router-dom";
-import { Bell, ArrowLeft } from "lucide-react";
-import AlertBanner from "../components/AlertBanner"; // Importation de ton nouveau composant
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from "react-router-dom";
+import { Bell, ArrowLeft, Loader2 } from "lucide-react";
+import AlertBanner from "../components/AlertBanner";
 
 export default function Alerts() {
-  // Simulation des alertes provenant de ton backend
-  const [alerts, setAlerts] = useState([
-    { id: 1, type: "error", message: "LIGNE A : Caméra de tri déconnectée (Timeout 5000ms)" },
-    { id: 2, type: "warning", message: "LIGNE B : Baisse de qualité détectée (Taux de rejet > 15%)" },
-    { id: 3, type: "info", message: "SYSTÈME : Mise à jour du modèle IA prévue à 02h00" }
-  ]);
+  const navigate = useNavigate();
+  const [alerts, setAlerts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Fonction pour supprimer une alerte quand on clique sur la croix
-  const handleCloseAlert = (idToRemove) => {
+  // Fetch real alerts from the database!
+  useEffect(() => {
+    const fetchAlerts = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      try {
+        const response = await fetch("http://localhost:8000/api/alerts/", {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setAlerts(data.alerts);
+        }
+      } catch (error) {
+        console.error("Erreur de récupération des alertes:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAlerts();
+  }, [navigate]);
+
+  // Fonction pour supprimer une alerte (API + UI)
+  const handleCloseAlert = async (idToRemove) => {
+    // 1. Remove from screen instantly for a snappy UI
     setAlerts(alerts.filter(alert => alert.id !== idToRemove));
+
+    // 2. Tell the database to dismiss it
+    const token = localStorage.getItem("token");
+    await fetch(`http://localhost:8000/api/alerts/${idToRemove}/dismiss`, {
+      method: "PUT",
+      headers: { "Authorization": `Bearer ${token}` }
+    });
   };
 
   return (
@@ -28,9 +61,13 @@ export default function Alerts() {
         </p>
       </div>
       
-      {/* Liste des Alertes (Utilisation de ton composant) */}
+      {/* Liste des Alertes */}
       <div className="w-full max-w-2xl flex flex-col gap-2 mb-10">
-        {alerts.length === 0 ? (
+        {isLoading ? (
+           <div className="flex justify-center p-8 text-blue-500">
+             <Loader2 className="animate-spin" size={32} />
+           </div>
+        ) : alerts.length === 0 ? (
           <div className="text-center p-8 text-gray-500 border border-dashed border-gray-300 dark:border-gray-800 rounded-xl">
             Aucune alerte active. Tous les systèmes sont nominaux.
           </div>
@@ -39,7 +76,7 @@ export default function Alerts() {
             <AlertBanner 
               key={alert.id} 
               type={alert.type} 
-              message={alert.message} 
+              message={`${alert.date} - ${alert.message}`} 
               onClose={() => handleCloseAlert(alert.id)} 
             />
           ))

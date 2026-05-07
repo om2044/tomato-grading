@@ -16,11 +16,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-#app.include_router(auth.router,      prefix="/api/auth",      tags=["Auth"])
+app.include_router(auth.router,      prefix="/api/auth",      tags=["Auth"])
 app.include_router(predict.router,   prefix="/api/predict",   tags=["Predict"])
 app.include_router(history.router,   prefix="/api/predictions",   tags=["History"])
 app.include_router(dashboard.router, prefix="/api/dashboard", tags=["Dashboard"])
-#app.include_router(alerts.router,    prefix="/api/alerts",    tags=["Alerts"])
+app.include_router(alerts.router,    prefix="/api/alerts",    tags=["Alerts"])
 #app.include_router(reports.router,   prefix="/api/reports",   tags=["Reports"])
 #app.include_router(users.router,     prefix="/api/users",     tags=["Users"])
 

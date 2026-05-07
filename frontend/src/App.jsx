@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route ,Navigate} from 'react-router-dom'
 
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
@@ -8,13 +8,15 @@ import Reports from './pages/Reports'
 import Alerts from './pages/Alerts'
 import Settings from './pages/Settings'
 import Pricing from './pages/Pricing'
+import Register from "./pages/Register";
 
 function App() {
   return (
     <Routes>
       {/* La porte d'entrée de ton app React */}
-      <Route path="/" element={<Login />} />
-      
+      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
       {/* La zone logicielle */}
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/classifier" element={<Classifier />} />
@@ -23,6 +25,7 @@ function App() {
       <Route path="/alerts" element={<Alerts />} />
       <Route path="/settings" element={<Settings />} />
       <Route path="/pricing" element={<Pricing />} />
+      
     </Routes>
   )
 }

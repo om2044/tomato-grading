@@ -59,7 +59,7 @@ export default function Sidebar() {
           <div className="absolute left-full ml-4 px-2 py-1 bg-gray-800 border border-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-lg">Paramètres</div>
         </Link>
 
-        <Link to="/" className="p-2.5 text-gray-400 dark:text-gray-500/70 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-all group relative cursor-pointer block">
+        <Link to="/login" className="p-2.5 text-gray-400 dark:text-gray-500/70 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-all group relative cursor-pointer block">
           <LogOut size={20} />
           <div className="absolute left-full ml-4 px-2 py-1 bg-gray-800 border border-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-lg">Déconnexion</div>
         </Link>
