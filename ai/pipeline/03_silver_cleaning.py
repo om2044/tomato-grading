@@ -12,15 +12,15 @@ TARGET_SIZE = (224, 224)
 
 
 DIR_MAPPING = {
-    "OriginalData/ExportOriginal": "Export",
-    "OriginalData/localOriginal": "Marche_Local",
-    "OriginalData/RottenOriginal": "Rejet"
+    "OriginalData/OriginalData/ExportOriginal": "Export",
+    "OriginalData/OriginalData/Marche_Local": "Marche_Local",
+    "OriginalData/OriginalData/Rejet": "Rejet"
 }
 
 def clean_and_map_data():
     print("🧹 Démarrage du nettoyage Silver avec suppression d'arrière-plan (rembg)...\n")
     
-    for final_class in ["Export", "Marche_Local", "Rejet"]:
+    for final_class in FOLDER_MAPPING.values():
         (SILVER_DIR / final_class).mkdir(parents=True, exist_ok=True)
 
     if not BRONZE_KAGGLE_DIR.exists():
@@ -29,39 +29,42 @@ def clean_and_map_data():
 
     stats = {"Export": 0, "Marche_Local": 0, "Rejet": 0}
 
-    for relative_path, target_class in DIR_MAPPING.items():
-        source_dir = BRONZE_KAGGLE_DIR / relative_path
-        target_dir = SILVER_DIR / target_class
+    for source_name, target_class in FOLDER_MAPPING.items():
+        # Recherche dynamique du dossier (rglob cherche partout dans les sous-dossiers)
+        found_dirs = [d for d in BRONZE_KAGGLE_DIR.rglob(source_name) if d.is_dir()]
         
-        if not source_dir.exists():
+        if not found_dirs:
+            print(f"⚠️ Impossible de trouver le dossier '{source_name}' dans le zip Kaggle.")
             continue
             
-        print(f"🔄 Traitement et détourage de '{source_dir.name}' vers '{target_class}'...")
+        source_dir = found_dirs[0]
         
-        for img_path in source_dir.glob("*.*"):
-            if img_path.suffix.lower() in ['.jpg', '.jpeg', '.png']:
+        # Trouver toutes les images
+        images = [f for f in source_dir.glob("*.*") if f.suffix.lower() in ['.jpg', '.jpeg', '.png']]
+        print(f"\n🔄 Traitement de '{source_dir.name}' vers '{target_class}' ({len(images)} images)...")
+        
+        for i, img_path in enumerate(images):
+            new_filename = f"kgl_{source_dir.name}_{img_path.stem}.png"
+            output_path = SILVER_DIR / target_class / new_filename
+            
+            # Reprise en cas de coupure (ignore si l'image est déjà détourée)
+            if output_path.exists():
+                stats[target_class] += 1
+                continue
+            
+            try:
+                img = Image.open(img_path)
+                clean_img = remove(img)
+                clean_img = clean_img.resize(TARGET_SIZE)
+                clean_img.save(output_path, "PNG")
+                stats[target_class] += 1
                 
-                # Sauvegarde en PNG car le JPEG ne gère pas la transparence du fond retiré
-                new_filename = f"kgl_{source_dir.name}_{img_path.stem}.png"
-                output_path = target_dir / new_filename
-                
-                if output_path.exists():
-                    continue # Ignore si déjà traité
-                
-                try:
-                    # 1. Ouvrir l'image originale
-                    img = Image.open(img_path)
+                # Afficher la progression pour savoir que le script tourne !
+                if (i + 1) % 50 == 0:
+                    print(f"     [{i + 1}/{len(images)}] Images détourées et sauvegardées...")
                     
-                    # 2. Ta logique : Retirer le fond
-                    clean_img = remove(img)
-                    
-                    # 3. Redimensionner et sauvegarder
-                    clean_img = clean_img.resize(TARGET_SIZE)
-                    clean_img.save(output_path, "PNG")
-                    
-                    stats[target_class] += 1
-                except Exception as e:
-                    print(f"  ❌ Erreur avec l'image {img_path.name}: {e}")
+            except Exception as e:
+                print(f"  ❌ Erreur avec {img_path.name}: {e}")
 
     print("\n✅ Nettoyage Silver terminé ! Bilan des données :")
     for classe, count in stats.items():
