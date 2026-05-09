@@ -1,6 +1,7 @@
-import os
+import cv2
+import random
+import albumentations as A
 from pathlib import Path
-from tensorflow.keras.preprocessing.image import ImageDataGenerator, img_to_array, load_img
 
 # --- Configuration ---
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -8,63 +9,69 @@ TRAIN_DIR = BASE_DIR / "data" / "gold" / "train"
 
 CLASSES_METIER = ["Export", "Marche_Local", "Rejet"]
 
-# Nombre de nouvelles images à générer pour chaque image originale
-AUGMENTATION_MULTIPLIER = 3 
+# Ton objectif de balancement (modifie ce chiffre selon tes besoins)
+TARGET_TOTAL = 5000 
+TARGET_SIZE = (224, 224)
 
-# Configuration des déformations réalistes pour des tomates
-datagen = ImageDataGenerator(
-    rotation_range=40,      # Tourner l'image jusqu'à 40 degrés
-    width_shift_range=0.1,  # Décaler légèrement horizontalement
-    height_shift_range=0.1, # Décaler légèrement verticalement
-    zoom_range=0.2,         # Zoomer ou dézoomer de 20%
-    horizontal_flip=True,   # Inverser l'image (effet miroir)
-    fill_mode='reflect'     # Remplir les pixels vides après une rotation
-)
+# Ta configuration Albumentations
+transform = A.Compose([
+    A.HorizontalFlip(p=0.5),              
+    A.VerticalFlip(p=0.5),                 
+    A.RandomRotate90(p=0.5),               
+])
 
-def augment_training_data():
-    print("🧬 Démarrage de l'Augmentation des données Gold (Train uniquement)...\n")
+def augment_and_balance_train_data():
+    print("🧬 Démarrage de l'équilibrage et de l'augmentation Gold (Albumentations)...\n")
 
     if not TRAIN_DIR.exists():
         print(f"❌ Erreur : Le dossier {TRAIN_DIR} n'existe pas. Lancez le script 05 d'abord.")
         return
 
-    total_generated = 0
-
     for classe in CLASSES_METIER:
         class_dir = TRAIN_DIR / classe
-        if not class_dir.exists(): continue
-
-        # On liste uniquement les images originales (pour ne pas re-augmenter des images déjà augmentées en cas de double lancement)
-        original_images = [f for f in class_dir.glob("*.*") if not f.name.startswith("aug_")]
-        
-        if not original_images:
+        if not class_dir.exists(): 
             continue
             
-        print(f"🔄 Augmentation de la classe '{classe}' ({len(original_images)} images originales)...")
+        valid_extensions = {'.png', '.jpg', '.jpeg'}
+        image_paths = [p for p in class_dir.iterdir() if p.suffix.lower() in valid_extensions and p.is_file()]
+        
+        if not image_paths:
+            continue
 
-        for img_path in original_images:
-            try:
-                # Charger l'image et la convertir en tableau numpy
-                img = load_img(img_path)
-                x = img_to_array(img)
-                x = x.reshape((1,) + x.shape) # Format attendu par Keras (1, 224, 224, 3)
+        print(f"🔄 Classe '{classe}' : {len(image_paths)} originales trouvées.")
+        
+        # Charger les originales en RAM
+        resized_originals = []
+        for p in image_paths:
+            img = cv2.imread(str(p), cv2.IMREAD_UNCHANGED) # IMREAD_UNCHANGED pour garder la transparence PNG !
+            if img is not None:
+                # Les images sont déjà en 224x224 depuis Silver, mais on s'assure du format
+                if img.shape[:2] != TARGET_SIZE:
+                    img = cv2.resize(img, TARGET_SIZE)
+                    cv2.imwrite(str(p), img)
+                resized_originals.append((p.name, img))
 
-                # Générer de nouvelles images et les sauvegarder
-                i = 0
-                for batch in datagen.flow(x, batch_size=1, save_to_dir=class_dir, save_prefix=f'aug_{img_path.stem}', save_format='jpeg'):
-                    i += 1
-                    total_generated += 1
-                    if i >= AUGMENTATION_MULTIPLIER:
-                        break # On s'arrête après avoir généré le nombre voulu de copies
-            except Exception as e:
-                print(f"  ❌ Erreur avec {img_path.name}: {e}")
+        current_count = len(resized_originals)
+        images_needed = TARGET_TOTAL - current_count
+        
+        if images_needed <= 0:
+            print(f"  ✅ Déjà équilibré (>= {TARGET_TOTAL}).")
+            continue
+            
+        print(f"  ⚙️ Génération de {images_needed} nouvelles images...")
+        
+        # Générer le manque
+        for i in range(images_needed):
+            orig_name, image = random.choice(resized_originals)
+            
+            augmented = transform(image=image)
+            aug_image = augmented['image']
+            
+            new_filename = f"aug_balance_{i}_{orig_name}"
+            save_path = class_dir / new_filename
+            cv2.imwrite(str(save_path), aug_image)
 
-    print("\n" + "="*40)
-    print("📊 BILAN DE L'AUGMENTATION")
-    print("="*40)
-    print(f"Images physiquement générées : +{total_generated}")
-    print("="*40)
-    print("🚀 Les données Train sont désormais gonflées à bloc !")
+        print(f"  ✅ '{classe}' contient maintenant exactement {TARGET_TOTAL} images.")
 
 if __name__ == "__main__":
-    augment_training_data()
+    augment_and_balance_train_data()

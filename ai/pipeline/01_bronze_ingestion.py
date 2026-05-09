@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # --- Configuration des chemins absolus ---
+# Omar ayont le dossier data car il'a pas possible de pusher les données sur GitHub.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 DATA_DIR = BASE_DIR / "data"
 
@@ -15,7 +16,7 @@ KAGGLE_DIR = BRONZE_DIR / "kaggle"
 CUSTOM_DIR = BRONZE_DIR / "custom_photos"
 
 CLASSES_METIER = ["Export", "Marche_Local", "Rejet"]
-DATASET_NAME = "sujaykapadnis/tomato-maturity-detection-and-quality-grading"
+DATASET_NAME = "mohamedafkir90/tomato-quality-classification"
 
 def setup_architecture():
     """Crée l'arborescence des dossiers si elle n'existe pas."""
