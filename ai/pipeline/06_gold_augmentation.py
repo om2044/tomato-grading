@@ -10,7 +10,8 @@ TRAIN_DIR = BASE_DIR / "data" / "gold" / "train"
 CLASSES_METIER = ["Export", "Marche_Local", "Rejet"]
 
 # Ton objectif de balancement (modifie ce chiffre selon tes besoins)
-TARGET_TOTAL = 5000 
+#TARGET_TOTAL = 5000 
+TARGET_TOTAL = 60
 TARGET_SIZE = (224, 224)
 
 # Ta configuration Albumentations

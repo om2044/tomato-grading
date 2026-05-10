@@ -13,14 +13,14 @@ TARGET_SIZE = (224, 224)
 
 DIR_MAPPING = {
     "OriginalData/OriginalData/ExportOriginal": "Export",
-    "OriginalData/OriginalData/Marche_Local": "Marche_Local",
-    "OriginalData/OriginalData/Rejet": "Rejet"
+    "OriginalData/OriginalData/localOriginal": "Marche_Local",
+    "OriginalData/OriginalData/RottenOriginal": "Rejet"
 }
 
 def clean_and_map_data():
     print("🧹 Démarrage du nettoyage Silver avec suppression d'arrière-plan (rembg)...\n")
     
-    for final_class in FOLDER_MAPPING.values():
+    for final_class in DIR_MAPPING.values():
         (SILVER_DIR / final_class).mkdir(parents=True, exist_ok=True)
 
     if not BRONZE_KAGGLE_DIR.exists():
@@ -29,7 +29,7 @@ def clean_and_map_data():
 
     stats = {"Export": 0, "Marche_Local": 0, "Rejet": 0}
 
-    for source_name, target_class in FOLDER_MAPPING.items():
+    for source_name, target_class in DIR_MAPPING.items():
         # Recherche dynamique du dossier (rglob cherche partout dans les sous-dossiers)
         found_dirs = [d for d in BRONZE_KAGGLE_DIR.rglob(source_name) if d.is_dir()]
         
@@ -44,6 +44,7 @@ def clean_and_map_data():
         print(f"\n🔄 Traitement de '{source_dir.name}' vers '{target_class}' ({len(images)} images)...")
         
         for i, img_path in enumerate(images):
+
             new_filename = f"kgl_{source_dir.name}_{img_path.stem}.png"
             output_path = SILVER_DIR / target_class / new_filename
             
@@ -60,7 +61,7 @@ def clean_and_map_data():
                 stats[target_class] += 1
                 
                 # Afficher la progression pour savoir que le script tourne !
-                if (i + 1) % 50 == 0:
+                if (i + 1) % 10 == 0:
                     print(f"     [{i + 1}/{len(images)}] Images détourées et sauvegardées...")
                     
             except Exception as e:

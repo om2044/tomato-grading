@@ -20,12 +20,28 @@ Bronze (raw) → Argent (clean) → Or (ML-ready) → CNN → API → Frontend
 
 ## Démarrage rapide
 
+
 ```bash
-# 1. Cloner le projet
+# Cloner le projet
 git clone https://github.com/om2044/tomato-grading.git
 cd tomato-grading
 
-# 2. Créer et activer l'environnement virtuel pour backend
+# Fichier: ai/.env
+KAGGLE_USERNAME=votre_nom_utilisateur_kaggle
+KAGGLE_KEY=votre_cle_api_secrete
+
+mkdir data
+cd data
+mkdir bronze
+cd ../ai
+
+# Installation des outils de traitement d'images
+pip install rembg albumentations opencv-python
+
+# Lancement de l'ingestion, du nettoyage et de l'augmentation
+python run_pipeline.py
+
+#  Créer et activer l'environnement virtuel pour backend
 cd backend
 python -m venv venv
 
