@@ -5,6 +5,11 @@ export function useClassifier() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
 
+  const resetClassifier = () => {
+    setResult(null);
+    setError(null);
+  };
+
   const classifyImage = async (imageFile) => {
     setIsClassifying(true);
     setResult(null);
@@ -55,5 +60,5 @@ export function useClassifier() {
   };
 
   // We expose the state and the function so your UI components can use them
-  return { classifyImage, isClassifying, result, error };
+  return { classifyImage, resetClassifier, isClassifying, result, error };
 }

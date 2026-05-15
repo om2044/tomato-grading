@@ -1,7 +1,7 @@
 from fastapi import APIRouter, File, UploadFile, HTTPException, Depends
 from sqlalchemy.orm import Session
-import tensorflow as tf
 import numpy as np
+from ultralytics import YOLO
 from PIL import Image
 import io
 from pathlib import Path
@@ -13,20 +13,21 @@ router = APIRouter()
 
 ROOT_DIR = Path(__file__).resolve().parents[4]
 
-MODEL_PATH = ROOT_DIR / "ai" / "models" / "Tomato_grading_05.keras"
-
+# 🛑 1. Pointing to the YOLO model you trained
+MODEL_PATH = ROOT_DIR / "ai" / "models" / "Tomato_grading_YOLO_BEST.pt"
 
 try:
-    print(f"Attempting to load model from: {MODEL_PATH}") 
-    model = tf.keras.models.load_model(str(MODEL_PATH))
+    print(f"📥 Loading YOLO model from: {MODEL_PATH}")
+    # 🛑 2. The YOLO production loader
+    model = YOLO(str(MODEL_PATH))
+    print("✅ Model fully loaded and ready for production!")
     
 except Exception as e:
-    print(f"Warning: Model failed to load. Error: {e}")
+    print(f"❌ Warning: Model failed to load. Error: {e}")
     model = None
-class_names = ['Local', 'Export', 'Rotten']
 
 @router.post("/")
-async def predict_tomato(file: UploadFile = File(...),db: Session = Depends(get_db)):
+async def predict_tomato(file: UploadFile = File(...), db: Session = Depends(get_db)):
     if model is None:
         raise HTTPException(status_code=500, detail="AI Model is not available on the server.")
     
@@ -35,39 +36,32 @@ async def predict_tomato(file: UploadFile = File(...),db: Session = Depends(get_
 
     try:
         contents = await file.read()
-        
-       
         no_bg_bytes = remove(contents)
-        
         
         file_size = len(contents)
         print(f"Received file: {file.filename} | Size: {file_size} bytes")
         
         if file_size == 0:
             raise HTTPException(status_code=400, detail="The uploaded file is completely empty (0 bytes).")
-       
 
         try:
             image = Image.open(io.BytesIO(no_bg_bytes)).convert('RGB')
         except Exception as img_error:
-            
             print(f"Pillow failed to open image: {img_error}")
             raise HTTPException(status_code=400, detail="The file is corrupted or not a valid image format.")
         
+        # 🛑 3. Handling the YOLO Model Output
+        results = model.predict(image)
         
-        image = image.resize((224, 224))
-        img_array = np.array(image)
-        img_array = np.expand_dims(img_array, axis=0)
-        img_array = img_array / 255.0
+        names_dict = results[0].names
+        predicted_class_index = results[0].probs.top1
+        confidence = float(results[0].probs.top1conf)
         
-        predictions = model.predict(img_array)
-        predicted_class_index = np.argmax(predictions[0])
-        confidence = float(np.max(predictions[0]))
+        predicted_class_name = names_dict[predicted_class_index]
         
-       
-        if class_names[predicted_class_index] == "Export":
+        if predicted_class_name == "Export":
             mapped_class = "A"
-        elif class_names[predicted_class_index] == "Local":
+        elif predicted_class_name == "Local":
             mapped_class = "B"
         else:
             mapped_class = "C"
@@ -76,33 +70,27 @@ async def predict_tomato(file: UploadFile = File(...),db: Session = Depends(get_
         REAL_USER_ID = "37b1ebf3-27b8-4b62-82b6-ac6015bd2a8a"
         
         db_record = PredictionRecord(
-            #-------
-            #just pour test
             tenant_id=REAL_TENANT_ID, 
             user_id=REAL_USER_ID,
-            #------
             classe=mapped_class,
             confidence=confidence,
-            decision=class_names[predicted_class_index] ,
+            decision=predicted_class_name,
             image_path=None
-           
         )
         db.add(db_record)
         db.commit()
         db.refresh(db_record)
-       
 
         return {
             "success": True,
             "id": str(db_record.id),
             "filename": file.filename,
-            "prediction": class_names[predicted_class_index], 
+            "prediction": predicted_class_name, 
             "classe": mapped_class, 
             "confidence": confidence
         }
         
     except HTTPException:
-       
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")

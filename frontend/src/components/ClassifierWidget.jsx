@@ -1,14 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { Camera, RefreshCw, Upload, Loader2, Zap, CheckCircle, AlertTriangle } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import Webcam from "react-webcam";
+import { Camera, RefreshCw, Upload, Loader2, Zap, CheckCircle, AlertTriangle, ScanLine } from 'lucide-react';
 import { useClassifier } from '../hooks/useClassifier'; // We are importing your real AI hook!
 
-export default function ClassifierWidget() {
+export default function ClassifierWidget({ mode = 'image' }) {
   const [imagePreview, setImagePreview] = useState(null);
   const [imageFile, setImageFile] = useState(null); // Keep the actual file to send to API
   const [scanLine, setScanLine] = useState(0);
+  const [isCameraReady, setIsCameraReady] = useState(false);
+  const [cameraError, setCameraError] = useState(null);
+  const webcamRef = useRef(null);
 
   // Hook up your real AI connection!
-  const { classifyImage, isClassifying, result, error } = useClassifier();
+  const { classifyImage, resetClassifier, isClassifying, result, error } = useClassifier();
 
   // Faux "laser" animation
   useEffect(() => {
@@ -32,9 +36,45 @@ export default function ClassifierWidget() {
     }
   };
 
+  const captureAndAnalyze = useCallback(() => {
+    console.log("Capture button clicked");
+    if (!webcamRef.current) {
+      console.error("Webcam ref is null");
+      return;
+    }
+    
+    const imageSrc = webcamRef.current.getScreenshot();
+    if (imageSrc) {
+      console.log("Screenshot captured successfully");
+      setImagePreview(imageSrc);
+      
+      try {
+        // Robust base64 to File conversion
+        const arr = imageSrc.split(',');
+        const mime = arr[0].match(/:(.*?);/)[1];
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while(n--){
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+        const file = new File([u8arr], "webcam_capture.jpg", { type: mime });
+        
+        setImageFile(file);
+        classifyImage(file);
+      } catch (err) {
+        console.error("Failed to convert image and analyze", err);
+      }
+    } else {
+      console.warn("Screenshot returned null - camera might not be ready");
+      alert("La caméra n'est pas encore prête ou l'accès est refusé. Veuillez autoriser la caméra et réessayer.");
+    }
+  }, [webcamRef, classifyImage]);
+
   const handleReset = () => {
     setImagePreview(null);
     setImageFile(null);
+    resetClassifier();
   };
 
   return (
@@ -44,7 +84,9 @@ export default function ClassifierWidget() {
       <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950/60">
         <div className="flex items-center gap-2">
           <Camera size={14} className="text-gray-500 dark:text-gray-400" />
-          <span className="text-xs font-bold uppercase tracking-widest text-gray-700 dark:text-gray-300">Flux Vidéo en Direct — Caméra 1</span>
+          <span className="text-xs font-bold uppercase tracking-widest text-gray-700 dark:text-gray-300">
+            {mode === 'webcam' ? 'Flux Vidéo en Direct — Caméra 1' : 'Upload Image Scanner'}
+          </span>
         </div>
         <div className="flex items-center gap-3">
           {imagePreview && (
@@ -72,13 +114,41 @@ export default function ClassifierWidget() {
           <div className="absolute left-0 right-0 h-px bg-green-400/60 dark:bg-green-400/40 pointer-events-none z-30" style={{ top: `${scanLine}%`, boxShadow: "0 0 12px rgba(74,222,128,0.6)", transition: "top 0.03s linear" }} />
         )}
 
-        {/* Upload Zone */}
+        {/* Upload Zone / Webcam Feed */}
         {!imagePreview ? (
-          <label className="z-10 flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-white/5 dark:hover:bg-gray-900/30 transition-colors border-2 border-dashed border-gray-600 dark:border-gray-800 m-4 rounded-xl">
-            <Upload size={48} className="text-gray-400 dark:text-gray-600 mb-4" />
-            <span className="text-gray-300 dark:text-gray-400 font-bold uppercase tracking-widest text-sm">Charger une image test</span>
-            <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
-          </label>
+          mode === 'webcam' ? (
+            <div className="relative w-full h-full flex flex-col items-center justify-center p-4 z-10">
+              <Webcam
+                audio={false}
+                ref={webcamRef}
+                screenshotFormat="image/jpeg"
+                onUserMedia={() => setIsCameraReady(true)}
+                onUserMediaError={(err) => setCameraError(err.message || "Erreur d'accès à la caméra")}
+                className="max-w-full max-h-[70%] object-contain rounded border border-gray-700 dark:border-gray-800"
+              />
+              
+              {cameraError && (
+                <div className="absolute top-4 left-4 right-4 p-3 bg-red-900/80 border border-red-500 rounded text-red-200 text-sm font-bold text-center z-50">
+                  ⚠️ Impossible d'accéder à la caméra : {cameraError}
+                </div>
+              )}
+
+              <button 
+                type="button" 
+                onClick={captureAndAnalyze} 
+                disabled={!isCameraReady}
+                className={`mt-6 text-white font-bold uppercase tracking-widest px-8 py-4 rounded-lg flex items-center gap-3 transition-all cursor-pointer z-50 pointer-events-auto ${isCameraReady ? 'bg-green-600 hover:bg-green-500 shadow-[0_0_20px_rgba(74,222,128,0.4)]' : 'bg-gray-600 opacity-50 cursor-not-allowed'}`}
+              >
+                <ScanLine size={18} /> {isCameraReady ? "CAPTURER & ANALYSER" : "CAMÉRA EN CHARGEMENT..."}
+              </button>
+            </div>
+          ) : (
+            <label className="z-10 flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-white/5 dark:hover:bg-gray-900/30 transition-colors border-2 border-dashed border-gray-600 dark:border-gray-800 m-4 rounded-xl">
+              <Upload size={48} className="text-gray-400 dark:text-gray-600 mb-4" />
+              <span className="text-gray-300 dark:text-gray-400 font-bold uppercase tracking-widest text-sm">Charger une image test</span>
+              <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
+            </label>
+          )
         ) : (
           <div className="relative w-full h-full flex flex-col items-center justify-center p-4 z-10">
             
@@ -102,8 +172,8 @@ export default function ClassifierWidget() {
                </div>
             )}
 
-            {/* The Button */}
-            {!isClassifying && !result && !error && (
+            {/* The Analyze Button (Only for Upload Mode) */}
+            {!isClassifying && !result && !error && mode === 'image' && (
               <button onClick={handleAnalyze} className="mt-6 bg-blue-600 hover:bg-blue-500 text-white font-bold uppercase tracking-widest px-8 py-4 rounded-lg shadow-[0_0_20px_rgba(37,99,235,0.4)] flex items-center gap-3 transition-all cursor-pointer">
                 <Zap size={18} /> Lancer l'analyse
               </button>
@@ -138,7 +208,7 @@ export default function ClassifierWidget() {
         {/* Petit overlay KPIs Vidéo */}
         <div className="absolute bottom-0 left-0 right-0 p-3 flex items-end justify-between z-30 pointer-events-none">
           <div className="flex gap-2 flex-wrap">
-            <span className="text-xs bg-black/70 text-blue-400 px-2 py-1 rounded border border-blue-500/20">Modèle: <strong>CNN v1.0</strong></span>
+            <span className="text-xs bg-black/70 text-blue-400 px-2 py-1 rounded border border-blue-500/20">Modèle: <strong>YOLO v1.0</strong></span>
             {result && <span className="text-xs bg-black/70 text-green-400 px-2 py-1 rounded border border-green-500/20">Statut: <strong>Scan Terminé</strong></span>}
           </div>
         </div>

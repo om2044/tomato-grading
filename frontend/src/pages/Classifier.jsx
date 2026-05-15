@@ -52,7 +52,7 @@ export default function Classifier() {
             
             {/* GAUCHE : Widget Caméra (prend 2 colonnes sur grand écran) */}
             <div className="xl:col-span-2 flex flex-col min-h-[500px]">
-              <ClassifierWidget />
+              <ClassifierWidget mode="webcam" />
             </div>
 
             {/* DROITE : Panneau de Diagnostic IA */}
