@@ -41,6 +41,7 @@ pip install rembg albumentations opencv-python
 # Lancement de l'ingestion, du nettoyage et de l'augmentation
 python run_pipeline.py
 
+
 #  Créer et activer l'environnement virtuel pour backend
 cd backend
 python -m venv venv
