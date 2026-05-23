@@ -1,11 +1,14 @@
 from passlib.context import CryptContext
 import jwt
 from datetime import datetime, timedelta
+import os
+from dotenv import load_dotenv
 
-# In a real app, keep this secret in your .env file!
-SECRET_KEY = "tomato-super-secret-key"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 # Token lasts for 24 hours
+load_dotenv()
+
+SECRET_KEY = os.getenv("SECRET_KEY", "fallback-secret-change-me")
+ALGORITHM = os.getenv("ALGORITHM", "HS256")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 1440))
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

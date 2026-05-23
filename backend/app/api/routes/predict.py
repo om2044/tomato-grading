@@ -1,4 +1,6 @@
-from fastapi import APIRouter, File, UploadFile, HTTPException, Depends
+from fastapi import APIRouter, File, UploadFile, HTTPException, Depends, Header
+from jose import jwt, JWTError
+from app.core.security import SECRET_KEY, ALGORITHM
 from sqlalchemy.orm import Session
 import numpy as np
 from ultralytics import YOLO
@@ -27,13 +29,23 @@ except Exception as e:
     model = None
 
 @router.post("/")
-async def predict_tomato(file: UploadFile = File(...), db: Session = Depends(get_db)):
+async def predict_tomato(file: UploadFile = File(...), db: Session = Depends(get_db),authorization: str = Header(None)):
     if model is None:
         raise HTTPException(status_code=500, detail="AI Model is not available on the server.")
     
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="Invalid file type. Please upload an image.")
+    
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization header missing")
+    try:
+        token = authorization.split(" ")[1]
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("sub")
+    except JWTError as e:
+        raise HTTPException(status_code=401, detail="Invalid token")
 
+    tenant_id = "4535d643-2fc6-47e1-9e2a-21f2e4fc14b1"
     try:
         contents = await file.read()
         no_bg_bytes = remove(contents)
@@ -66,12 +78,9 @@ async def predict_tomato(file: UploadFile = File(...), db: Session = Depends(get
         else:
             mapped_class = "C"
 
-        REAL_TENANT_ID = "4535d643-2fc6-47e1-9e2a-21f2e4fc14b1" 
-        REAL_USER_ID = "37b1ebf3-27b8-4b62-82b6-ac6015bd2a8a"
-        
         db_record = PredictionRecord(
-            tenant_id=REAL_TENANT_ID, 
-            user_id=REAL_USER_ID,
+            tenant_id=tenant_id, 
+            user_id=user_id,
             classe=mapped_class,
             confidence=confidence,
             decision=predicted_class_name,

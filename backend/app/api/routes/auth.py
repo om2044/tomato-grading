@@ -43,7 +43,7 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Incorrect email or password")
     
     # 3. Create the JWT Token
-    access_token = create_access_token(data={"sub": str(db_user.id), "role": db_user.role})
+    access_token = create_access_token(data={"sub": str(db_user.id), "role": db_user.role, "tenant_id": str(db_user.tenant_id)})
     
     return {
         "access_token": access_token, 
