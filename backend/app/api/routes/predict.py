@@ -77,6 +77,7 @@ async def predict_tomato(file: UploadFile = File(...), db: Session = Depends(get
             mapped_class = "B"
         else:
             mapped_class = "C"
+            predicted_class_name = "Rejet"
 
         db_record = PredictionRecord(
             tenant_id=tenant_id, 

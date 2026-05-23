@@ -73,7 +73,7 @@ export default function Dashboard() {
             total: dashData.metrics.total_scans,
             export: breakdown["Export"] || 0,
             local: breakdown["Local"] || 0,
-            rejet: breakdown["Rotten"] || breakdown["Rejet"] || 0, // Gère 'Rotten' ou 'Rejet'
+            rejet:  breakdown["Rejet"] || 0, 
             confidence: dashData.metrics.average_confidence
           });
         }
@@ -87,7 +87,7 @@ export default function Dashboard() {
           const histData = await histRes.json();
           // Filtrer seulement les rejets et prendre les 5 derniers
           const badTomatoes = histData.data
-            .filter(item => item.decision === "Rotten" || item.decision === "Rejet")
+            .filter(item => item.decision === "Rejet")
             .slice(0, 5)
             .map(item => ({
               id: item.id,
