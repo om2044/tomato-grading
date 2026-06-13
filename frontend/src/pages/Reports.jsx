@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { BarChart2, ArrowLeft, Clock3, Layers, TrendingUp, Loader2, AlertCircle, Download, Filter, Calendar } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable'; // <-- CHANGEMENT 1 : Import direct
 
@@ -21,6 +21,7 @@ const getBadgeStyle = (decision) => {
 };
 
 export default function Reports() {
+  const navigate = useNavigate();
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [report, setReport] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,6 +39,12 @@ export default function Reports() {
   }, [isDarkMode]);
 
   const fetchReports = useCallback(async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
     setIsLoading(true);
     setError('');
     try {
@@ -52,7 +59,9 @@ export default function Reports() {
         url += `?${queryString}`;
       }
 
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
       const data = await response.json();
 
       if (!response.ok) {
@@ -66,7 +75,7 @@ export default function Reports() {
     } finally {
       setIsLoading(false);
     }
-  }, [startDate, endDate]);
+  }, [startDate, endDate, navigate]);
 
   useEffect(() => {
     fetchReports();

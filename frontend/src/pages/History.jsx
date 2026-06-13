@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Database, Search, Filter, Download, MoreHorizontal, CheckCircle, AlertTriangle, XCircle, Loader2 } from 'lucide-react';
 
 // Composants globaux
@@ -6,6 +7,7 @@ import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
 
 export default function History() {
+  const navigate = useNavigate();
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   
@@ -25,8 +27,16 @@ export default function History() {
   // Récupération des données depuis FastAPI
   useEffect(() => {
     const fetchPredictions = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
       try {
-        const response = await fetch('http://localhost:8000/api/predictions');
+        const response = await fetch('http://localhost:8000/api/predictions', {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
         const result = await response.json();
         // On stocke les vraies données dans l'état (result.data vient de notre format FastAPI)
         setPredictions(result.data || []);
@@ -38,7 +48,7 @@ export default function History() {
     };
 
     fetchPredictions();
-  }, []);
+  }, [navigate]);
 
   // Adaptation des badges pour tes vraies "decisions" (Export, Local, Rejet)
   const getBadgeStyle = (decision) => {
@@ -73,6 +83,45 @@ export default function History() {
     (item.decision && item.decision.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
+  const handleExportCSV = () => {
+    if (predictions.length === 0) {
+      alert("Aucune donnée à exporter.");
+      return;
+    }
+
+    const headers = ["ID Scan", "Date", "Heure", "Classe", "Decision", "Confiance"];
+
+    const rows = predictions.map(row => {
+      const dt = row.created_at ? new Date(row.created_at) : null;
+      const dateStr = dt ? dt.toLocaleDateString('fr-FR') : "N/A";
+      const timeStr = dt ? dt.toLocaleTimeString('fr-FR') : "N/A";
+      const confPct = row.confidence ? (row.confidence * 100).toFixed(1) + "%" : "0%";
+      
+      return [
+        row.id || "N/A",
+        dateStr,
+        timeStr,
+        row.classe ? `Classe ${row.classe}` : "N/A",
+        row.decision || "N/A",
+        confPct
+      ];
+    });
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(e => e.map(val => `"${val.replace(/"/g, '""')}"`).join(","))
+    ].join("\n");
+
+    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `historique_scans_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 font-mono overflow-hidden transition-colors duration-300" 
          style={{ fontFamily: "'JetBrains Mono', 'Courier New', monospace" }}>
@@ -94,7 +143,10 @@ export default function History() {
                 Base de données centrale · {predictions.length} enregistrements récupérés
               </p>
             </div>
-            <button className="flex items-center gap-2 bg-gray-900 hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-100 text-white dark:text-gray-900 px-4 py-2 rounded-lg font-bold text-sm transition-colors shadow-sm w-fit">
+            <button 
+              onClick={handleExportCSV}
+              className="flex items-center gap-2 bg-gray-900 hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-100 text-white dark:text-gray-900 px-4 py-2 rounded-lg font-bold text-sm transition-colors shadow-sm w-fit"
+            >
               <Download size={16} /> Exporter CSV
             </button>
           </div>

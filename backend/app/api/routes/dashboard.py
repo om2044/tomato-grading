@@ -1,13 +1,22 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func
+from jose import jwt, JWTError
 from app.core.database import get_db
 from app.core.model import PredictionRecord
+from app.core.security import SECRET_KEY, ALGORITHM
 
 router = APIRouter()
 
 @router.get("/")
-def get_dashboard_stats(db: Session = Depends(get_db)):
+def get_dashboard_stats(authorization: str = Header(None), db: Session = Depends(get_db)):
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Non autorisé")
+    try:
+        token = authorization.split(" ")[1]
+        jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Token invalide")
    
     total_scans = db.query(PredictionRecord).count()
     

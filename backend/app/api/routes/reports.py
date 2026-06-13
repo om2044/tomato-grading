@@ -2,12 +2,14 @@ from collections import defaultdict
 from datetime import date
 from typing import Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy import func
 from sqlalchemy.orm import Session
+from jose import jwt, JWTError
 
 from app.core.database import get_db
 from app.core.model import PredictionRecord
+from app.core.security import SECRET_KEY, ALGORITHM
 
 router = APIRouter()
 
@@ -18,8 +20,16 @@ def _format_confidence(value: float | None) -> float:
 def get_reports(
     start_date: Optional[date] = None,
     end_date: Optional[date] = None,
+    authorization: str = Header(None),
     db: Session = Depends(get_db)
 ):
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Non autorisé")
+    try:
+        token = authorization.split(" ")[1]
+        jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Token invalide")
     # 1. Build the date filters
     filters = []
     if start_date:

@@ -1,9 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
+import { useAuthStore } from "../store/authStore";
 import {
   LayoutDashboard, Camera, Database, BarChart2, Bell, Settings, LogOut
 } from "lucide-react";
 
 export default function Sidebar() {
+  const logout = useAuthStore((state) => state.logout);
   // useLocation permet de savoir sur quelle URL on est actuellement
   const location = useLocation();
   
@@ -59,7 +61,14 @@ export default function Sidebar() {
           <div className="absolute left-full ml-4 px-2 py-1 bg-gray-800 border border-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-lg">Paramètres</div>
         </Link>
 
-        <Link to="/login" className="p-2.5 text-gray-400 dark:text-gray-500/70 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-all group relative cursor-pointer block">
+        <Link 
+          to="/login" 
+          onClick={() => {
+            localStorage.removeItem("token");
+            logout();
+          }}
+          className="p-2.5 text-gray-400 dark:text-gray-500/70 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-all group relative cursor-pointer block"
+        >
           <LogOut size={20} />
           <div className="absolute left-full ml-4 px-2 py-1 bg-gray-800 border border-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-lg">Déconnexion</div>
         </Link>
