@@ -210,7 +210,7 @@ export default function Dashboard() {
             <div className="flex items-center gap-6">
               <span className="flex items-center gap-1.5">
                 <Zap size={12} className="text-yellow-500" />
-                Modèle : <span className="text-gray-700 dark:text-gray-300 font-medium">CNN v2</span>
+                Modèle : <span className="text-gray-700 dark:text-gray-300 font-medium">YOLO</span>
               </span>
               <span className="flex items-center gap-1.5">
                 <Thermometer size={12} className="text-orange-500" />
@@ -221,7 +221,7 @@ export default function Dashboard() {
             <div className="flex items-center gap-2">
               <span className="text-gray-600 dark:text-gray-400 font-semibold tracking-wider">Tomato-Grading OS</span>
               <span className="text-gray-300 dark:text-gray-600">·</span>
-              <span className="text-gray-400 dark:text-gray-500 font-mono">v1.1.0-beta</span>
+              <span className="text-gray-400 dark:text-gray-500 font-mono">v0.4.0-beta</span>
             </div>
           </div>
         </footer>

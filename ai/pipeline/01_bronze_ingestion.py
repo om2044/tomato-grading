@@ -15,6 +15,10 @@ BRONZE_DIR = DATA_DIR / "bronze"
 KAGGLE_DIR = BRONZE_DIR / "kaggle"
 CUSTOM_DIR = BRONZE_DIR / "custom_photos"
 
+MONITORING_DIR = DATA_DIR / "monotoring"
+MONITORING_ORIGINAL = MONITORING_DIR / "original"
+MONITORING_BG_REMOVED = MONITORING_DIR / "bg_removed"
+
 CLASSES_METIER = ["Export", "Marche_Local", "Rejet"]
 DATASET_NAME = "mohamedafkir90/tomato-quality-classification"
 
@@ -25,6 +29,9 @@ def setup_architecture():
     (DATA_DIR / "silver").mkdir(parents=True, exist_ok=True)
     (DATA_DIR / "gold").mkdir(parents=True, exist_ok=True)
     KAGGLE_DIR.mkdir(parents=True, exist_ok=True)
+
+    MONITORING_ORIGINAL.mkdir(parents=True, exist_ok=True)
+    MONITORING_BG_REMOVED.mkdir(parents=True, exist_ok=True)
     
     for classe in CLASSES_METIER:
         (CUSTOM_DIR / classe).mkdir(parents=True, exist_ok=True)

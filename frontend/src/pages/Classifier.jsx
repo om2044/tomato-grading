@@ -6,6 +6,7 @@ import Navbar from '../components/Navbar';
 import ClassifierWidget from '../components/ClassifierWidget';
 import ConfidenceBar from '../components/ConfidenceBar';
 import { useClassifier } from '../hooks/useClassifier';
+import StreamWidget from '../components/StreamWidget';
 
 const DEFAULT_BARS = [
   { key: 'Export', label: 'Qualité Export  (Classe A)', color: 'green'  },
@@ -153,16 +154,25 @@ export default function Classifier() {
 
             {/* LEFT: Camera widget */}
             <div className="xl:col-span-2 flex flex-col min-h-[500px]">
-              <ClassifierWidget
-                mode="webcam"
-                conveyorMode={conveyorMode}
-                activeModel={activeModel}
-                classifyImage={classifyImage}
-                isClassifying={isClassifying}
-                result={result}
-                error={error}
-                resetClassifier={resetClassifier}
-              />
+              {conveyorMode ? (
+                <StreamWidget
+                  activeModel={activeModel}
+                  classifyImage={classifyImage}
+                  isClassifying={isClassifying}
+                  result={result}
+                  error={error}
+                />
+              ) : (
+                <ClassifierWidget
+                  mode="webcam"
+                  activeModel={activeModel}
+                  classifyImage={classifyImage}
+                  isClassifying={isClassifying}
+                  result={result}
+                  error={error}
+                  resetClassifier={resetClassifier}
+                />
+              )}
             </div>
 
             {/* RIGHT: Diagnostic panel */}

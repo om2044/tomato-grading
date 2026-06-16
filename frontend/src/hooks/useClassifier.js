@@ -24,14 +24,15 @@ export function useClassifier() {
       const formData = new FormData();
       formData.append("file", imageFile);
 
-      const response = await fetch(
-        `http://localhost:8000/api/predict?model=${model}`,
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          body: formData,
-        }
-      );
+      const response = await fetch("http://localhost:8000/api/predict", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`
+          // Note: We DO NOT set "Content-Type" here. 
+          // The browser automatically sets it for FormData with the correct boundaries!
+        },
+        body: formData
+      });
 
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}));

@@ -14,8 +14,9 @@ def get_predictions(authorization: str = Header(None), db: Session = Depends(get
     try:
         token = authorization.split(" ")[1]
         jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-    except JWTError:
-        raise HTTPException(status_code=401, detail="Token invalide")
+    except JWTError as e:
+        print(f"JWT decode error in history: {e}")
+        raise HTTPException(status_code=401, detail=f"Token invalide: {str(e)}")
 
     try:
         # On utilise text() pour exécuter notre requête SQL dans SQLAlchemy
