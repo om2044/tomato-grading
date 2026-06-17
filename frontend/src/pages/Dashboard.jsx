@@ -12,6 +12,7 @@ import StatCard from "../components/StatCard";
 import Navbar from "../components/Navbar";
 import ClassifierWidget from "../components/ClassifierWidget";
 import Sidebar from "../components/Sidebar";
+import { requireValidResponse } from "../services/session";
 
 const CustomTooltip = ({ active, payload }) => {
   if (!active || !payload?.length) return null;
@@ -65,39 +66,36 @@ export default function Dashboard() {
           headers: { "Authorization": `Bearer ${token}` }
         });
         
-        if (dashRes.ok) {
-          const dashData = await dashRes.json();
-          const breakdown = dashData.metrics.breakdown;
-          
-          setStats({
-            total: dashData.metrics.total_scans,
-            export: breakdown["Export"] || 0,
-            local: breakdown["Local"] || 0,
-            rejet:  breakdown["Rejet"] || 0, 
-            confidence: dashData.metrics.average_confidence
-          });
-        }
+        await requireValidResponse(dashRes, navigate);
+        const dashData = await dashRes.json();
+        const breakdown = dashData.metrics.breakdown;
+
+        setStats({
+          total: dashData.metrics.total_scans,
+          export: breakdown["Export"] || 0,
+          local: breakdown["Local"] || 0,
+          rejet:  breakdown["Rejet"] || 0,
+          confidence: dashData.metrics.average_confidence
+        });
 
         // 3. Appeler l'API HISTORIQUE (Pour le journal des rejets)
         const histRes = await fetch("/api/predictions/", {
           headers: { "Authorization": `Bearer ${token}` }
         });
         
-        if (histRes.ok) {
-          const histData = await histRes.json();
-          // Filtrer seulement les rejets et prendre les 5 derniers
-          const badTomatoes = histData.data
-            .filter(item => item.decision === "Rejet")
-            .slice(0, 5)
-            .map(item => ({
-              id: item.id,
-              time: new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-              reason: "Tomate Non-Conforme", // On pourrait améliorer ça avec les sous-classes IA plus tard
-              score: `${(item.confidence * 100).toFixed(0)}%`,
-              icon: AlertTriangle
-            }));
-          setRejectsLog(badTomatoes);
-        }
+        await requireValidResponse(histRes, navigate);
+        const histData = await histRes.json();
+        const badTomatoes = histData.data
+          .filter(item => item.decision === "Rejet")
+          .slice(0, 5)
+          .map(item => ({
+            id: item.id,
+            time: new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            reason: "Tomate Non-Conforme",
+            score: `${(item.confidence * 100).toFixed(0)}%`,
+            icon: AlertTriangle
+          }));
+        setRejectsLog(badTomatoes);
       } catch (error) {
         console.error("Erreur de connexion au backend:", error);
       } finally {
@@ -120,15 +118,14 @@ export default function Dashboard() {
   const rejectRate = stats.total > 0 ? Math.round((stats.rejet / stats.total) * 100) : 0;
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 font-mono overflow-hidden transition-colors duration-300"
-         style={{ fontFamily: "'JetBrains Mono', 'Courier New', monospace" }}>
+    <div className="app-shell">
 
       <Sidebar />
 
-      <div className="flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
+      <div className="flex-1 flex flex-col overflow-hidden">
         <Navbar isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
 
-        <main className="flex-1 max-w-screen-2xl mx-auto w-full px-6 py-5 flex flex-col gap-5 overflow-y-auto">
+        <main className="app-main mx-auto flex w-full max-w-screen-2xl flex-col gap-5">
 
           {/* KPI CARDS (Maintenant dynamiques !) */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 flex-shrink-0">
@@ -143,11 +140,11 @@ export default function Dashboard() {
 
             <div className="flex flex-col gap-4">
               {/* DONUT CHART */}
-              <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 flex flex-col h-[280px] shadow-sm dark:shadow-none">
+              <div className="surface flex h-[280px] flex-col p-5">
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2">
                     <BarChart2 size={13} className="text-gray-400 dark:text-gray-500" />
-                    <p className="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">Répartition</p>
+                    <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">Répartition</p>
                   </div>
                 </div>
                 <div className="relative flex-1">
@@ -177,9 +174,9 @@ export default function Dashboard() {
               </div>
 
               {/* JOURNAL DES REJETS */}
-              <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 flex flex-col flex-1 min-h-[250px] shadow-sm dark:shadow-none">
+              <div className="surface flex min-h-[250px] flex-1 flex-col p-5">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2"><Activity size={13} className="text-red-500" /><p className="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">Journal des Rejets</p></div>
+                  <div className="flex items-center gap-2"><Activity size={15} className="text-red-500" /><p className="text-sm font-semibold text-slate-700 dark:text-slate-200">Journal des rejets</p></div>
                 </div>
                 <div className="flex flex-col gap-2 overflow-y-auto pr-2 custom-scrollbar">
                   {rejectsLog.length === 0 && !isLoading ? (
@@ -205,7 +202,7 @@ export default function Dashboard() {
         </main>
 
         {/* FOOTER */}
-        <footer className="border-t border-gray-200 dark:border-gray-800 bg-white/90 dark:bg-gray-950/90 flex-shrink-0 transition-colors duration-300">
+        <footer className="flex-shrink-0 border-t border-slate-200 bg-white/90 transition-colors duration-300 dark:border-slate-800 dark:bg-slate-950/90">
           <div className="max-w-screen-2xl mx-auto px-6 py-2 flex items-center justify-between text-xs text-gray-500">
             <div className="flex items-center gap-6">
               <span className="flex items-center gap-1.5">
@@ -221,7 +218,7 @@ export default function Dashboard() {
             <div className="flex items-center gap-2">
               <span className="text-gray-600 dark:text-gray-400 font-semibold tracking-wider">Tomato-Grading OS</span>
               <span className="text-gray-300 dark:text-gray-600">·</span>
-              <span className="text-gray-400 dark:text-gray-500 font-mono">v0.4.0-beta</span>
+              <span className="text-gray-400 dark:text-gray-500">v0.4.0-beta</span>
             </div>
           </div>
         </footer>
