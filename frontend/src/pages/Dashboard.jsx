@@ -61,7 +61,7 @@ export default function Dashboard() {
 
       try {
         // 2. Appeler l'API WIDGET STATISTIQUES
-        const dashRes = await fetch("http://localhost:8000/api/dashboard", {
+        const dashRes = await fetch("/api/dashboard/", {
           headers: { "Authorization": `Bearer ${token}` }
         });
         
@@ -79,7 +79,7 @@ export default function Dashboard() {
         }
 
         // 3. Appeler l'API HISTORIQUE (Pour le journal des rejets)
-        const histRes = await fetch("http://localhost:8000/api/history", {
+        const histRes = await fetch("/api/predictions/", {
           headers: { "Authorization": `Bearer ${token}` }
         });
         

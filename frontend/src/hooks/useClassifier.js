@@ -24,7 +24,7 @@ export function useClassifier() {
       const formData = new FormData();
       formData.append("file", imageFile);
 
-      const response = await fetch("http://localhost:8000/api/predict", {
+      const response = await fetch("/api/predict/", {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`

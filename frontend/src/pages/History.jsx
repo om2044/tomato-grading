@@ -34,7 +34,7 @@ export default function History() {
       }
 
       try {
-        const response = await fetch('http://localhost:8000/api/predictions', {
+        const response = await fetch('/api/predictions/', {
           headers: { "Authorization": `Bearer ${token}` }
         });
         const result = await response.json();

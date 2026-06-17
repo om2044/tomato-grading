@@ -18,7 +18,7 @@ export default function Alerts() {
       }
 
       try {
-        const response = await fetch("http://localhost:8000/api/alerts/", {
+        const response = await fetch("/api/alerts/", {
           headers: { "Authorization": `Bearer ${token}` }
         });
 
@@ -43,7 +43,7 @@ export default function Alerts() {
 
     // 2. Tell the database to dismiss it
     const token = localStorage.getItem("token");
-    await fetch(`http://localhost:8000/api/alerts/${idToRemove}/dismiss`, {
+    await fetch(`/api/alerts/${idToRemove}/dismiss`, {
       method: "PUT",
       headers: { "Authorization": `Bearer ${token}` }
     });

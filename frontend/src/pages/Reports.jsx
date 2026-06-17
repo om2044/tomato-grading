@@ -48,7 +48,7 @@ export default function Reports() {
     setIsLoading(true);
     setError('');
     try {
-      let url = 'http://localhost:8000/api/reports';
+      let url = '/api/reports/';
       const params = new URLSearchParams();
       
       if (startDate) params.append('start_date', startDate);
