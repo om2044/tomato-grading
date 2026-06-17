@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuthStore } from '../store/authStore'; // Assuming this is your Zustand/Redux store
+import { clearSession } from '../services/session';
 
 export function useAuth() {
   const { user, isAuthenticated, login, logout } = useAuthStore();
@@ -9,6 +10,7 @@ export function useAuth() {
   const performLogin = async (email, password) => {
     setIsLoading(true);
     setError(null);
+    clearSession();
     try {
       // 1. Send the email & password to FastAPI
       const response = await fetch("/api/auth/login", {

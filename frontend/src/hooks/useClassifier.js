@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { clearSession } from '../services/session';
 
 export function useClassifier() {
   const [isClassifying, setIsClassifying] = useState(false);
@@ -36,6 +37,10 @@ export function useClassifier() {
 
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}));
+        if (response.status === 401) {
+          clearSession();
+          throw new Error("Session expirée. Veuillez vous reconnecter.");
+        }
         throw new Error(errData.detail || "Erreur lors de la classification.");
       }
 
