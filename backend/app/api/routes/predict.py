@@ -1,4 +1,5 @@
 import pathlib
+import os
 
 from fastapi import APIRouter, File, UploadFile, HTTPException, Depends, Header
 from jose import jwt, JWTError
@@ -15,13 +16,38 @@ from rembg import remove
 
 router = APIRouter()
 
-ROOT_DIR = Path(__file__).resolve().parents[4]
+BACKEND_DIR = Path(__file__).resolve().parents[3]
+PROJECT_DIR = BACKEND_DIR.parent
 
-# 🛑 1. Pointing to the YOLO model you trained
-MODEL_PATH = ROOT_DIR / "ai" / "models" / "Tomato_grading_YOLO_BEST.pt"
 
-MOTORING_ORIGINAL = ROOT_DIR / "data" / "monotoring" / "original"
-MOTORING_BG_REMOVED = ROOT_DIR / "data" / "monotoring" / "bg_removed"
+def resolve_model_path() -> Path:
+    env_model_path = os.getenv("MODEL_PATH")
+    candidates = []
+
+    if env_model_path:
+        candidates.append(Path(env_model_path))
+
+    candidates.extend(
+        [
+            Path("/models/Tomato_grading_YOLO_BEST.pt"),
+            PROJECT_DIR / "ai" / "models" / "Tomato_grading_YOLO_BEST.pt",
+        ]
+    )
+
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+
+    return candidates[0]
+
+
+MODEL_PATH = resolve_model_path()
+
+DATA_DIR = Path(os.getenv("DATA_DIR", PROJECT_DIR / "data"))
+MOTORING_ORIGINAL = DATA_DIR / "monotoring" / "original"
+MOTORING_BG_REMOVED = DATA_DIR / "monotoring" / "bg_removed"
+MOTORING_ORIGINAL.mkdir(parents=True, exist_ok=True)
+MOTORING_BG_REMOVED.mkdir(parents=True, exist_ok=True)
 
 try:
     print(f"📥 Loading YOLO model from: {MODEL_PATH}")
