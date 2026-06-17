@@ -1,25 +1,20 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { Lock, Mail, UserPlus, AlertCircle, CheckCircle } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { AlertCircle, CheckCircle, Lock, Mail, UserPlus } from "lucide-react";
 
 export default function Register() {
   const navigate = useNavigate();
-  
-  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  
- 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
-  const handleRegister = async (e) => {
-    e.preventDefault(); 
+  const handleRegister = async (event) => {
+    event.preventDefault();
     setError(null);
 
-    
     if (password !== confirmPassword) {
       setError("Les mots de passe ne correspondent pas.");
       return;
@@ -28,24 +23,19 @@ export default function Register() {
     setIsLoading(true);
 
     try {
-      
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password }),
       });
 
-      
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.detail || "Erreur lors de l'inscription");
       }
 
       setSuccess(true);
-      setTimeout(() => {
-        navigate("/login"); 
-      }, 2000); 
-
+      setTimeout(() => navigate("/login"), 2000);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -54,99 +44,92 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-6 transition-colors duration-300 font-mono">
-      <div className="w-full max-w-md bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-8 shadow-2xl dark:shadow-none">
-        
-        {/* Logo et Titre */}
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.3)] mb-4">
-            <span className="text-white dark:text-gray-950 font-black text-2xl">T</span>
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 p-6 text-slate-950 dark:bg-slate-950 dark:text-white">
+      <div className="w-full max-w-md">
+        <div className="mb-6 text-center">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-600 font-bold text-white">
+            T
           </div>
-          <h1 className="text-2xl font-black text-gray-900 dark:text-white">Tomato-Grading <span className="text-blue-500">Nouveau</span></h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Création de compte Opérateur</p>
+          <h1 className="text-2xl font-semibold tracking-tight">Créer un accès opérateur</h1>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+            Ajoutez un compte pour accéder à la supervision qualité.
+          </p>
         </div>
 
-        {/* Formulaire */}
-        <form onSubmit={handleRegister} className="flex flex-col gap-5">
-          
-          {/* Messages d'erreur ou de succès */}
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/50 text-red-500 text-sm p-3 rounded-lg flex items-center gap-2">
-              <AlertCircle size={16} />
-              {error}
-            </div>
-          )}
-          {success && (
-            <div className="bg-green-500/10 border border-green-500/50 text-green-500 text-sm p-3 rounded-lg flex items-center gap-2">
-              <CheckCircle size={16} />
-              Compte créé avec succès ! Redirection...
-            </div>
-          )}
+        <div className="surface p-7">
+          <form onSubmit={handleRegister} className="space-y-5">
+            {error && (
+              <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
+                <AlertCircle size={16} />
+                {error}
+              </div>
+            )}
+            {success && (
+              <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
+                <CheckCircle size={16} />
+                Compte créé. Redirection vers la connexion...
+              </div>
+            )}
 
-          <div>
-            <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-widest mb-2">Email industriel</label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-              <input 
-                type="email" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="nouvel@usine.com" 
-                className="w-full bg-gray-100 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg py-3 pl-10 pr-4 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 dark:focus:border-blue-500 transition-colors"
-                required
-              />
+            <div>
+              <label className="label">Email</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="nouvel@usine.com"
+                  className="field-with-icon"
+                  required
+                />
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-widest mb-2">Mot de passe</label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-              <input 
-                type="password" 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••" 
-                className="w-full bg-gray-100 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg py-3 pl-10 pr-4 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 dark:focus:border-blue-500 transition-colors"
-                required
-                minLength={6}
-              />
+            <div>
+              <label className="label">Mot de passe</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  placeholder="Minimum 6 caractères"
+                  className="field-with-icon"
+                  required
+                  minLength={6}
+                />
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-widest mb-2">Confirmer le mot de passe</label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-              <input 
-                type="password" 
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="••••••••" 
-                className="w-full bg-gray-100 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg py-3 pl-10 pr-4 text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 dark:focus:border-blue-500 transition-colors"
-                required
-              />
+            <div>
+              <label className="label">Confirmation</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
+                  placeholder="Confirmer le mot de passe"
+                  className="field-with-icon"
+                  required
+                />
+              </div>
             </div>
-          </div>
 
-          <button 
-            type="submit" 
-            disabled={isLoading || success}
-            className="mt-4 flex items-center justify-center gap-2 w-full bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white font-bold py-3 rounded-lg transition-colors shadow-lg shadow-blue-500/30"
-          >
-            {isLoading ? "Création..." : "S'inscrire"} <UserPlus size={18} />
-          </button>
-        </form>
+            <button type="submit" disabled={isLoading || success} className="btn-primary w-full">
+              {isLoading ? "Création..." : "Créer le compte"}
+              <UserPlus size={18} />
+            </button>
+          </form>
 
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Déjà un compte ?{' '}
-            <Link to="/login" className="text-blue-500 hover:text-blue-400 font-bold transition-colors">
+          <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
+            Déjà un compte ?{" "}
+            <Link to="/login" className="font-semibold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400">
               Se connecter
             </Link>
           </p>
         </div>
-
       </div>
     </div>
   );
