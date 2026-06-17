@@ -5,6 +5,7 @@ import { Database, Search, Filter, Download, MoreHorizontal, CheckCircle, AlertT
 // Composants globaux
 import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
+import { requireValidResponse } from '../services/session';
 
 export default function History() {
   const navigate = useNavigate();
@@ -37,6 +38,7 @@ export default function History() {
         const response = await fetch('/api/predictions/', {
           headers: { "Authorization": `Bearer ${token}` }
         });
+        await requireValidResponse(response, navigate);
         const result = await response.json();
         // On stocke les vraies données dans l'état (result.data vient de notre format FastAPI)
         setPredictions(result.data || []);
@@ -123,23 +125,22 @@ export default function History() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 font-mono overflow-hidden transition-colors duration-300" 
-         style={{ fontFamily: "'JetBrains Mono', 'Courier New', monospace" }}>
+    <div className="app-shell">
       
       <Sidebar />
       
-      <div className="flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
+      <div className="flex-1 flex flex-col overflow-hidden">
         
         <Navbar isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
         
-        <main className="flex-1 max-w-screen-2xl mx-auto w-full px-6 py-5 flex flex-col gap-5 overflow-y-auto">
+        <main className="app-main mx-auto flex w-full max-w-screen-2xl flex-col gap-5">
           
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 className="text-xl font-black uppercase tracking-widest text-gray-900 dark:text-white flex items-center gap-2">
-                <Database className="text-blue-500" /> Historique des Scans
+              <h2 className="page-title">
+                <Database className="text-sky-500" /> Historique des scans
               </h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              <p className="page-subtitle">
                 Base de données centrale · {predictions.length} enregistrements récupérés
               </p>
             </div>
@@ -151,7 +152,7 @@ export default function History() {
             </button>
           </div>
 
-          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm dark:shadow-none flex-1 flex flex-col min-h-0 overflow-hidden">
+          <div className="surface flex min-h-0 flex-1 flex-col overflow-hidden">
             
             <div className="p-4 border-b border-gray-200 dark:border-gray-800 flex flex-col sm:flex-row gap-4 items-center justify-between bg-gray-50/50 dark:bg-gray-950/30">
               <div className="relative w-full sm:w-96">

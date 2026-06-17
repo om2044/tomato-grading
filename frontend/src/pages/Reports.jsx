@@ -6,6 +6,7 @@ import autoTable from 'jspdf-autotable'; // <-- CHANGEMENT 1 : Import direct
 
 import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
+import { requireValidResponse } from '../services/session';
 
 const getBadgeStyle = (decision) => {
   switch (decision) {
@@ -62,11 +63,8 @@ export default function Reports() {
       const response = await fetch(url, {
         headers: { "Authorization": `Bearer ${token}` }
       });
+      await requireValidResponse(response, navigate);
       const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.detail || 'Impossible de charger les rapports');
-      }
 
       setReport(data.report);
     } catch (err) {
@@ -195,24 +193,24 @@ export default function Reports() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors duration-300 overflow-hidden">
+    <div className="app-shell">
       
       <Sidebar />
       
-      <div className="flex-1 flex flex-col w-full">
+      <div className="flex-1 flex flex-col w-full overflow-hidden">
         <Navbar isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
         
-        <main className="flex-1 overflow-y-auto p-6 lg:p-10">
+        <main className="app-main">
           <div className="max-w-6xl mx-auto">
             
             {/* Header Section */}
             <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-10 gap-6">
               <div>
-                <h1 className="text-3xl font-black flex items-center gap-3">
-                  <BarChart2 className="text-green-500" size={32} />
-                  Rapports de Production
+                <h1 className="page-title text-2xl">
+                  <BarChart2 className="text-emerald-500" size={28} />
+                  Rapports de production
                 </h1>
-                <p className="text-gray-500 dark:text-gray-400 mt-2">
+                <p className="page-subtitle">
                   Vue d'ensemble des rendements et bilans mensuels.
                   {startDate && endDate && (
                     <span className="ml-2 font-semibold">
@@ -266,24 +264,24 @@ export default function Reports() {
 
             {/* Top Metrics Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-              <div className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col">
+              <div className="surface flex flex-col p-6">
                 <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400 mb-4">
                   <Layers size={20} />
                   <h3 className="font-semibold text-sm uppercase tracking-wider">Total Scans</h3>
                 </div>
-                <span className="text-4xl font-black">{report?.total_scans?.toLocaleString()}</span>
+                <span className="text-4xl font-semibold tracking-tight">{report?.total_scans?.toLocaleString()}</span>
               </div>
 
-              <div className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col">
+              <div className="surface flex flex-col p-6">
                 <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400 mb-4">
                   <TrendingUp size={20} />
                   <h3 className="font-semibold text-sm uppercase tracking-wider">Confiance Moyenne</h3>
                 </div>
-                <span className="text-4xl font-black text-blue-600 dark:text-blue-400">{report?.average_confidence}</span>
+                <span className="text-4xl font-semibold tracking-tight text-sky-600 dark:text-sky-400">{report?.average_confidence}</span>
               </div>
 
               {/* Decision Breakdown (Export, Local, Rejet) */}
-              <div className="bg-white dark:bg-gray-900 p-8 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm col-span-1 md:col-span-2">
+              <div className="surface col-span-1 p-8 md:col-span-2">
                 <h3 className="font-semibold text-sm uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4">Répartition des Décisions</h3>
                 <div className="grid grid-cols-3 gap-4 h-full items-end pb-2">
                   {['Export', 'Local', 'Rejet'].map((status) => (
@@ -297,7 +295,7 @@ export default function Reports() {
             </div>
 
             {/* Monthly Production Table */}
-            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+            <div className="surface overflow-hidden">
               <div className="p-6 border-b border-gray-200 dark:border-gray-800 flex items-center gap-3">
                 <Clock3 className="text-gray-400" size={24} />
                 <h2 className="text-xl font-bold">Production Mensuelle</h2>
