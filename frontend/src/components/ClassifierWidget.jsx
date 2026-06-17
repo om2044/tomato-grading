@@ -196,7 +196,7 @@ export default function ClassifierWidget({ mode = 'image' }) {
                   </div>
                   <div className="flex flex-col text-right">
                     <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Confiance</span>
-                    <span className="text-xl font-mono font-bold">{(result.confidence * 100).toFixed(1)}%</span>
+                    <span className="text-xl font-semibold tabular-nums">{(result.confidence * 100).toFixed(1)}%</span>
                   </div>
                 </div>
               </div>
