@@ -1,76 +1,70 @@
 import { Link, useLocation } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 import {
-  LayoutDashboard, Camera, Database, BarChart2, Bell, Settings, LogOut
+  BarChart2,
+  Bell,
+  Camera,
+  Database,
+  LayoutDashboard,
+  LogOut,
+  Settings,
 } from "lucide-react";
+
+const navItems = [
+  { to: "/dashboard", label: "Vue générale", icon: LayoutDashboard },
+  { to: "/classifier", label: "Scanner IA", icon: Camera },
+  { to: "/history", label: "Historique", icon: Database },
+  { to: "/reports", label: "Rapports", icon: BarChart2 },
+  { to: "/alerts", label: "Alertes", icon: Bell },
+];
 
 export default function Sidebar() {
   const logout = useAuthStore((state) => state.logout);
-  // useLocation permet de savoir sur quelle URL on est actuellement
   const location = useLocation();
-  
-  // Petite fonction pour vérifier si l'onglet est actif
-  const isActive = (path) => location.pathname === path;
 
-  // Style de base pour les boutons
-  const baseStyle = "p-2.5 rounded-xl transition-all group relative cursor-pointer block";
-  const inactiveStyle = "text-gray-400 dark:text-gray-500/70 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-900";
-  const activeStyle = "bg-gray-100 dark:bg-gray-900 text-green-600 dark:text-green-400";
+  const itemClass = (path) =>
+    `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
+      location.pathname === path
+        ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"
+        : "text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-slate-100"
+    }`;
 
   return (
-    <aside className="w-16 bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-800 flex flex-col items-center py-4 gap-8 z-50 flex-shrink-0 transition-colors duration-300">
-      
-      {/* Logo */}
-      <div className="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(34,197,94,0.3)] cursor-pointer">
-        <span className="text-white dark:text-gray-950 font-black text-xl">T</span>
-      </div>
+    <aside className="hidden w-64 shrink-0 border-r border-slate-200 bg-white px-4 py-5 dark:border-slate-800 dark:bg-slate-950 lg:flex lg:flex-col">
+      <Link to="/dashboard" className="mb-8 flex items-center gap-3 px-2">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-600 text-lg font-bold text-white shadow-sm">
+          T
+        </div>
+        <div>
+          <p className="text-sm font-semibold leading-tight text-slate-950 dark:text-white">Tomato Grading</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Vision quality control</p>
+        </div>
+      </Link>
 
-      {/* Navigation Principale */}
-      <nav className="flex flex-col gap-5 w-full items-center">
-        
-        <Link to="/dashboard" className={`${baseStyle} ${isActive('/dashboard') ? activeStyle : inactiveStyle}`}>
-          <LayoutDashboard size={20} />
-          <div className="absolute left-full ml-4 px-2 py-1 bg-gray-800 border border-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-lg">Vue Générale</div>
-        </Link>
-
-        <Link to="/classifier" className={`${baseStyle} ${isActive('/classifier') ? activeStyle : inactiveStyle}`}>
-          <Camera size={20} />
-          <div className="absolute left-full ml-4 px-2 py-1 bg-gray-800 border border-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-lg">Scanner IA</div>
-        </Link>
-
-        <Link to="/history" className={`${baseStyle} ${isActive('/history') ? activeStyle : inactiveStyle}`}>
-          <Database size={20} />
-          <div className="absolute left-full ml-4 px-2 py-1 bg-gray-800 border border-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-lg">Historique</div>
-        </Link>
-
-        <Link to="/reports" className={`${baseStyle} ${isActive('/reports') ? activeStyle : inactiveStyle}`}>
-          <BarChart2 size={20} />
-          <div className="absolute left-full ml-4 px-2 py-1 bg-gray-800 border border-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-lg">Rapports</div>
-        </Link>
-
-        <Link to="/alerts" className={`${baseStyle} ${isActive('/alerts') ? activeStyle : inactiveStyle}`}>
-          <Bell size={20} />
-          <div className="absolute left-full ml-4 px-2 py-1 bg-gray-800 border border-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-lg">Alertes</div>
-        </Link>
+      <nav className="flex flex-col gap-1">
+        {navItems.map(({ to, label, icon: Icon }) => (
+          <Link key={to} to={to} className={itemClass(to)}>
+            <Icon size={18} />
+            <span>{label}</span>
+          </Link>
+        ))}
       </nav>
 
-      {/* Actions du bas */}
-      <div className="mt-auto mb-2 flex flex-col gap-2">
-        <Link to="/settings" className={`${baseStyle} ${isActive('/settings') ? activeStyle : inactiveStyle}`}>
-          <Settings size={20} />
-          <div className="absolute left-full ml-4 px-2 py-1 bg-gray-800 border border-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-lg">Paramètres</div>
+      <div className="mt-auto flex flex-col gap-1 border-t border-slate-200 pt-4 dark:border-slate-800">
+        <Link to="/settings" className={itemClass("/settings")}>
+          <Settings size={18} />
+          <span>Paramètres</span>
         </Link>
-
-        <Link 
-          to="/login" 
+        <Link
+          to="/login"
           onClick={() => {
             localStorage.removeItem("token");
             logout();
           }}
-          className="p-2.5 text-gray-400 dark:text-gray-500/70 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-all group relative cursor-pointer block"
+          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-500 transition hover:bg-red-50 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-500/10 dark:hover:text-red-300"
         >
-          <LogOut size={20} />
-          <div className="absolute left-full ml-4 px-2 py-1 bg-gray-800 border border-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-lg">Déconnexion</div>
+          <LogOut size={18} />
+          <span>Déconnexion</span>
         </Link>
       </div>
     </aside>
