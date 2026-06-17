@@ -76,31 +76,30 @@ export default function Settings() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 font-mono overflow-hidden transition-colors duration-300"
-         style={{ fontFamily: "'JetBrains Mono', 'Courier New', monospace" }}>
+    <div className="app-shell">
       
       <Sidebar />
       
-      <div className="flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
+      <div className="flex-1 flex flex-col overflow-hidden">
         
         <Navbar isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
         
-        <main className="flex-1 max-w-screen-2xl mx-auto w-full px-6 py-5 flex flex-col gap-5 overflow-y-auto">
+        <main className="app-main mx-auto flex w-full max-w-screen-2xl flex-col gap-5">
           
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-black uppercase tracking-widest text-gray-900 dark:text-white flex items-center gap-2">
-                <SettingsIcon className="text-gray-500" /> Réglages Système
+              <h2 className="page-title">
+                <SettingsIcon className="text-slate-500" /> Réglages système
               </h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              <p className="page-subtitle">
                 Configurez l'intelligence artificielle, les trames de caméras et les règles de supervision industrielle
               </p>
             </div>
             
             <button 
               onClick={handleSave} 
-              className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-5 py-2.5 rounded-lg font-bold text-sm transition-colors shadow-lg shadow-green-500/20"
+              className="btn-primary"
             >
               <Save size={16} /> Enregistrer
             </button>
@@ -118,7 +117,7 @@ export default function Settings() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
             
             {/* Sidebar interne de navigation */}
-            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-3 flex flex-col gap-1">
+            <div className="surface flex flex-col gap-1 p-3">
               <button 
                 onClick={() => setActiveTab('model')} 
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-all text-left ${activeTab === 'model' ? 'bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20' : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50'}`}
@@ -149,7 +148,7 @@ export default function Settings() {
             </div>
 
             {/* Contenu de la configuration */}
-            <div className="md:col-span-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm dark:shadow-none">
+            <div className="surface p-6 md:col-span-3">
               
               {/* Tab: Intelligence Artificielle */}
               {activeTab === 'model' && (

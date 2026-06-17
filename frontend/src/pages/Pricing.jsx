@@ -3,11 +3,11 @@ import { ArrowLeft, Check, X, Zap } from "lucide-react";
 
 export default function Pricing() {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 font-mono transition-colors duration-300 py-12 px-6 flex flex-col items-center">
+    <div className="flex min-h-screen flex-col items-center bg-slate-50 px-6 py-12 text-slate-950 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
       
       {/* En-tête */}
       <div className="text-center max-w-2xl mb-12 mt-8">
-        <h1 className="text-4xl font-black mb-4">Licences & Abonnements</h1>
+        <h1 className="mb-4 text-4xl font-semibold tracking-tight">Licences & Abonnements</h1>
         <p className="text-gray-500 dark:text-gray-400">
           Choisissez la puissance d'analyse adaptée au volume de votre centre de conditionnement. Sans engagement, annulez à tout moment.
         </p>

@@ -1,12 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from "react-router-dom";
-import { Bell, ArrowLeft, Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Bell, Loader2 } from "lucide-react";
 import AlertBanner from "../components/AlertBanner";
+import Sidebar from "../components/Sidebar";
+import Navbar from "../components/Navbar";
+import { requireValidResponse } from "../services/session";
 
 export default function Alerts() {
   const navigate = useNavigate();
   const [alerts, setAlerts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(true);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', isDarkMode);
+  }, [isDarkMode]);
 
   // Fetch real alerts from the database!
   useEffect(() => {
@@ -22,10 +30,9 @@ export default function Alerts() {
           headers: { "Authorization": `Bearer ${token}` }
         });
 
-        if (response.ok) {
-          const data = await response.json();
-          setAlerts(data.alerts);
-        }
+        await requireValidResponse(response, navigate);
+        const data = await response.json();
+        setAlerts(data.alerts);
       } catch (error) {
         console.error("Erreur de récupération des alertes:", error);
       } finally {
@@ -43,51 +50,51 @@ export default function Alerts() {
 
     // 2. Tell the database to dismiss it
     const token = localStorage.getItem("token");
-    await fetch(`/api/alerts/${idToRemove}/dismiss`, {
+    const response = await fetch(`/api/alerts/${idToRemove}/dismiss`, {
       method: "PUT",
       headers: { "Authorization": `Bearer ${token}` }
     });
+    await requireValidResponse(response, navigate);
   };
 
   return (
-    <div className="flex flex-col items-center h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 font-mono transition-colors duration-300 p-8 overflow-y-auto">
-      
-      {/* En-tête */}
-      <div className="flex flex-col items-center mb-10 mt-8">
-        <Bell size={64} className="text-red-500 mb-4 animate-pulse" />
-        <h1 className="text-4xl font-black mb-2">Journal d'Alertes</h1>
-        <p className="text-gray-500 dark:text-gray-400 max-w-md text-center">
-          Supervision en temps réel des incidents sur les lignes de production.
-        </p>
-      </div>
-      
-      {/* Liste des Alertes */}
-      <div className="w-full max-w-2xl flex flex-col gap-2 mb-10">
-        {isLoading ? (
-           <div className="flex justify-center p-8 text-blue-500">
-             <Loader2 className="animate-spin" size={32} />
-           </div>
-        ) : alerts.length === 0 ? (
-          <div className="text-center p-8 text-gray-500 border border-dashed border-gray-300 dark:border-gray-800 rounded-xl">
-            Aucune alerte active. Tous les systèmes sont nominaux.
+    <div className="app-shell">
+      <Sidebar />
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <Navbar isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+
+        <main className="app-main mx-auto flex w-full max-w-5xl flex-col gap-6">
+          <div className="page-header">
+            <div>
+              <h1 className="page-title">
+                <Bell className="text-red-500" /> Journal d'alertes
+              </h1>
+              <p className="page-subtitle">Incidents actifs et seuils franchis sur la ligne de production.</p>
+            </div>
           </div>
-        ) : (
-          alerts.map(alert => (
-            <AlertBanner 
-              key={alert.id} 
-              type={alert.type} 
-              message={`${alert.date} - ${alert.message}`} 
-              onClose={() => handleCloseAlert(alert.id)} 
-            />
-          ))
-        )}
+
+          <div className="surface p-5">
+            {isLoading ? (
+              <div className="flex justify-center p-10 text-sky-500">
+                <Loader2 className="animate-spin" size={32} />
+              </div>
+            ) : alerts.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-slate-300 p-10 text-center text-sm text-slate-500 dark:border-slate-800 dark:text-slate-400">
+                Aucune alerte active. Tous les systèmes sont nominaux.
+              </div>
+            ) : (
+              alerts.map(alert => (
+                <AlertBanner
+                  key={alert.id}
+                  type={alert.type}
+                  message={`${alert.date} - ${alert.message}`}
+                  onClose={() => handleCloseAlert(alert.id)}
+                />
+              ))
+            )}
+          </div>
+        </main>
       </div>
-      
-      {/* Bouton de retour */}
-      <Link to="/dashboard" className="flex items-center gap-2 px-6 py-3 bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 rounded-lg transition-colors font-bold shadow-sm dark:shadow-none mt-auto">
-        <ArrowLeft size={18} />
-        Retour au Dashboard
-      </Link>
     </div>
   );
 }
