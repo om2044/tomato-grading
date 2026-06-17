@@ -51,24 +51,23 @@ export default function Classifier() {
   }));
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 font-mono overflow-hidden transition-colors duration-300"
-      style={{ fontFamily: "'JetBrains Mono', 'Courier New', monospace" }}>
+    <div className="app-shell">
 
       <Sidebar />
 
-      <div className="flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
+      <div className="flex-1 flex flex-col overflow-hidden">
         <Navbar isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
 
-        <main className="flex-1 max-w-screen-2xl mx-auto w-full px-6 py-5 flex flex-col gap-5 overflow-y-auto">
+        <main className="app-main mx-auto flex w-full max-w-screen-2xl flex-col gap-5">
 
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 className="text-xl font-black uppercase tracking-widest text-gray-900 dark:text-white flex items-center gap-2">
-                <Brain className="text-green-500" /> Scanner IA Hautes Performances
+              <h2 className="page-title">
+                <Brain className="text-emerald-500" /> Scanner IA
               </h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                Analyse densimétrique et colorimétrique en temps réel
+              <p className="page-subtitle">
+                Analyse des lots et classification qualité en temps réel
               </p>
             </div>
 
@@ -179,11 +178,11 @@ export default function Classifier() {
             <div className="flex flex-col gap-4">
 
               {/* Confidence bars */}
-              <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 shadow-sm">
+              <div className="surface p-5">
                 <div className="flex items-center justify-between mb-5">
                   <div className="flex items-center gap-2">
                     <Activity size={15} className="text-blue-500"/>
-                    <h3 className="text-sm font-bold uppercase tracking-widest text-gray-700 dark:text-gray-300">Analyse de la trame</h3>
+                    <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Analyse de la trame</h3>
                   </div>
                   <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border ${
                     isClassifying ? 'bg-green-500/10 border-green-500/30 text-green-500 animate-pulse' : result ? 'bg-blue-500/10 border-blue-500/20 text-blue-400' : 'bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-500'
@@ -204,10 +203,10 @@ export default function Classifier() {
               </div>
 
               {/* Model params */}
-              <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 shadow-sm flex-1">
+              <div className="surface flex-1 p-5">
                 <div className="flex items-center gap-2 mb-5">
                   <Settings2 size={15} className="text-gray-500"/>
-                  <h3 className="text-sm font-bold uppercase tracking-widest text-gray-700 dark:text-gray-300">Paramètres Modèle</h3>
+                  <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Paramètres modèle</h3>
                 </div>
                 <div className="space-y-3">
                   {[
