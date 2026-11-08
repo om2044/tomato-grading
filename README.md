@@ -1,3 +1,5 @@
+[![CI](https://github.com/om2044/tomato-grading/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/om2044/tomato-grading/actions/workflows/ci.yml)
+
 # 🍅 TomatoGrade
 
 **AI-Powered Tomato Quality Grading | Computer Vision · Data Engineering · Full-Stack Development**
